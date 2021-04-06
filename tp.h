@@ -38,5 +38,12 @@ union {
 	uint8_t data[CLUSTER_SIZE];
 } data_cluster;
 
-dir_entry_t root_dir[32];// diretorio raiz
+dir_entry_t root_dir[32];// diretorio raiz 32 entradas
+
+
+char *getComando(char *linhaComando);
+// void printDir()
+
+int init();
+int load();
 

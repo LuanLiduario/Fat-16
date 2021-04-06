@@ -1,18 +1,14 @@
 #include "tp.h"
 
-char *getComando(char *linhaComando)
-{
+char *getComando(char *linhaComando){
   int tam = strlen(linhaComando);
   char *comando = (char *)malloc(sizeof(char) * 50);
   printf("%d\n", tam);
-  for (int i = 0; i < tam; i++)
-  {
-    if (linhaComando[i] != ' ')
-    {
+  for (int i = 0; i < tam; i++){
+    if (linhaComando[i] != ' '){
       comando[i] = linhaComando[i];
     }
-    else
-    {
+    else{
       comando[i] = "\0";
       return comando;
     }
@@ -20,65 +16,54 @@ char *getComando(char *linhaComando)
   return comando;
 }
 
-int main()
-{
+void printDir(){
+   printf("$");
+}
+
+int main(){
 
   int carregado = 0; // variavel 0-fat não carregada e 1-para fat carregada
   char *linhaComando = (char *)malloc(sizeof(char) * 50);
   char *comando = (char *)malloc(sizeof(char) * 50);
-  do
-  {
-    printf("$");
+  
+  do{
+  
+    printDir();
     gets(linhaComando);
+    fflush(stdin);
     comando = getComando(linhaComando);
     printf("%s\n", comando);
-    if (strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || carregado == 1)
-    {
-      if (strcmp(comando, "init") == 0)
-      {
-        init();
-        carregado = 1;
-      }
-      else if (strcmp(comando, "load") == 0)
-      {
-        printf("load\n");
-        carregado = 1;
-      }
-      else if (strcmp(comando, "ls") == 0)
-      {
-      }
-      else if (strcmp(comando, "mkdir") == 0)
-      {
-      }
-      else if (strcmp(comando, "create") == 0)
-      {
-      }
-      else if (strcmp(comando, "unlink") == 0)
-      {
-      }
-      else if (strcmp(comando, "write") == 0)
-      {
-      }
-      else if (strcmp(comando, "append") == 0)
-      {
-      }
-      else if (strcmp(comando, "read") == 0)
-      {
-      }
-      else if (strcmp(comando, "read") == 0)
-      {
-      }
-      else
-      {
+  
+    if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 ||  strcmp(comando, "exit") == 0){
+      if (strcmp(comando, "init") == 0){
+        carregado = init();
+      }else if (strcmp(comando, "load") == 0){
+        carregado = load();
+      }else if (strcmp(comando, "ls") == 0){
+        printf("ls\n");
+      }else if (strcmp(comando, "mkdir") == 0){
+        printf("mkdir\n");
+      }else if (strcmp(comando, "create") == 0){
+        printf("create\n");
+      }else if (strcmp(comando, "unlink") == 0){
+        printf("unlink\n");
+      }else if (strcmp(comando, "write") == 0){
+        printf("write\n");
+      }else if (strcmp(comando, "append") == 0){
+        printf("append\n");
+      }else if (strcmp(comando, "read") == 0){
+        printf("read\n");
+      }else if (strcmp(comando, "exit") == 0){
+        printf("exit\n");
+        free(linhaComando);
+        free(comando);
+        return 0;
+      }else{
         printf("comando invalido\n");
       }
+    }else{
+      printf("ERRO fat nao inicializada!\n");
     }
-    else
-    {
-      printf("ERRO fat nao inicializada ou carregada\n");
-    }
-
   } while (1);
-  init();
-  return 0;
+
 }
