@@ -10,6 +10,10 @@ char *getComando(char *linhaComando){
     }
     else{
       comando[i] = "\0";
+       tam = strlen(comando);
+      printf("%s\n",comando );
+       printf("%d\n", tam);
+      getchar();
       return comando;
     }
   }

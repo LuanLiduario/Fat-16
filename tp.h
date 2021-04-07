@@ -33,10 +33,14 @@ typedef struct {
 uint16_t fat[4096];
 /* diretorios (incluindo ROOT), 32 entradas de diretorio
 com 32 bytes cada = 1024 bytes ou bloco de dados de 1024 bytes*/
-union {
+//typedef union _data_cluster data_cluster;
+typedef union{
 	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)];
 	uint8_t data[CLUSTER_SIZE];
-} data_cluster;
+}data_cluster;
+
+//typedef union data_cluster data_cluster;
+
 
 dir_entry_t root_dir[32];// diretorio raiz 32 entradas
 
@@ -47,3 +51,5 @@ char *getComando(char *linhaComando);
 int init();
 int load();
 
+data_cluster lerCluster(int index);
+void salvarCluster(int index,data_cluster cluster);
