@@ -34,13 +34,13 @@ uint16_t fat[4096];
 /* diretorios (incluindo ROOT), 32 entradas de diretorio
 com 32 bytes cada = 1024 bytes ou bloco de dados de 1024 bytes*/
 //typedef union _data_cluster data_cluster;
-typedef union{
+typedef union
+{
 	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)];
 	uint8_t data[CLUSTER_SIZE];
-}data_cluster;
+} data_cluster;
 
 //typedef union data_cluster data_cluster;
-
 
 dir_entry_t root_dir[32]; // diretorio raiz
 
@@ -49,5 +49,6 @@ int init();
 int load();
 
 data_cluster lerCluster(int index);
-void salvarCluster(int index,data_cluster cluster);
+void salvarCluster(int index, data_cluster cluster);
 
+void separaString(char *string1, char *string2, char *string3);

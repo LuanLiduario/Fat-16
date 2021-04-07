@@ -1,17 +1,21 @@
 #include "tp.h"
-char *getComando(char *linhaComando){
+char *getComando(char *linhaComando)
+{
   int tam = strlen(linhaComando);
   char *comando = (char *)malloc(sizeof(char) * 50);
   printf("%d\n", tam);
-  for (int i = 0; i < tam; i++){
-    if (linhaComando[i] != ' '){
+  for (int i = 0; i < tam; i++)
+  {
+    if (linhaComando[i] != ' ')
+    {
       comando[i] = linhaComando[i];
     }
-    else{
+    else
+    {
       comando[i] = "\0";
-       tam = strlen(comando);
-      printf("%s\n",comando );
-       printf("%d\n", tam);
+      tam = strlen(comando);
+      printf("%s\n", comando);
+      printf("%d\n", tam);
       getchar();
       return comando;
     }
@@ -19,11 +23,13 @@ char *getComando(char *linhaComando){
   return comando;
 }
 
-void printDir(){
-   printf("$");
+void printDir()
+{
+  printf("$");
 }
 
-int main(){
+int main()
+{
 
   int carregado = 0; // variavel 0-fat não carregada e 1-para fat carregada
   char *linhaComando = (char *)malloc(sizeof(char) * 50);

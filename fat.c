@@ -1,24 +1,29 @@
 #include "tp.h"
-int init(){
-	int i = 0; 
-	FILE *arq = fopen("fat.part","wb");
-	if(arq == NULL){
+int init()
+{
+	int i = 0;
+	FILE *arq = fopen("fat.part", "wb");
+	if (arq == NULL)
+	{
 		printf("ERRO ao abrir arquivo fat\n");
 		return 0;
 	}
 	//boot_block
 	uint8_t boot_block = 0xbb;
-	for(i  ; i < CLUSTER_SIZE; i++){
-		fwrite(&boot_block,sizeof(boot_block),1, arq);
+	for (i; i < CLUSTER_SIZE; i++)
+	{
+		fwrite(&boot_block, sizeof(boot_block), 1, arq);
 	}
 	//preencher tabela fat
 	fat[0] = 0xfffd;
-	i = 1; 
-	for(i ; i < 10; i++){
+	i = 1;
+	for (i; i < 10; i++)
+	{
 		fat[i] = 0xfffe;
 	}
 	fat[9] = 0xffff;
-	for(i ; i < 4096; i++){//definir o restante das
+	for (i; i < 4096; i++)
+	{ //definir o restante das
 		fat[i] = 0x00;
 	}
 	//FAT
@@ -46,9 +51,9 @@ int load()
 		printf("ERRO ao abrir arquivo fat\n");
 		return 0;
 	}
-	fseek(arq,CLUSTER_SIZE, SEEK_SET); //Aponta para o FAT após o boot_block de 1024 bytes
-	fread(fat,sizeof(uint16_t),4096,arq);// Ler o FAT com 4096 entradas de 16 bits
-	fread(root_dir,sizeof(dir_entry_t),32,arq);// Ler diretorio raiz com 32 entradas
+	fseek(arq, CLUSTER_SIZE, SEEK_SET);						 //Aponta para o FAT após o boot_block de 1024 bytes
+	fread(fat, sizeof(uint16_t), 4096, arq);			 // Ler o FAT com 4096 entradas de 16 bits
+	fread(root_dir, sizeof(dir_entry_t), 32, arq); // Ler diretorio raiz com 32 entradas
 	fclose(arq);
 	return 1;
 }
@@ -65,7 +70,7 @@ int load()
 // 	char **dir_list = NULL;
 // 	int i;
 // 	/* chama a função de quebrar o caminho em varias strings */
-// 	int retorno = break_dir(dir, &dir_list); 
+// 	int retorno = break_dir(dir, &dir_list);
 // 	if(retorno == -1){ //Se ouver algum erro
 // 		return -1;
 // 	}
@@ -83,14 +88,14 @@ int load()
 
 // 			data_cluster new_dir;
 // 			memset(new_dir.dir, 0, 32 * sizeof(dir_entry_t));
-// 			int pos = retorno - 1; 
+// 			int pos = retorno - 1;
 
 // 			if(pos < 0)
 // 				pos = 0;
 // 			int i, achou_espaco = 0;
 // 			for(int j = 0; j < 32; j++){
 // 				/*testa se ja existe um diretorio com o nome desejado*/
-// 				if(strcmp(data.dir[j].filename, dir_list[pos]) == 0){ 
+// 				if(strcmp(data.dir[j].filename, dir_list[pos]) == 0){
 // 					fprintf(stderr, "Diretorio/Arquivo ja existe\n");
 // 					return 1;
 // 				}
@@ -101,11 +106,11 @@ int load()
 // 					i = j;
 // 				}
 // 			}
-			
+
 // 			/*coloca o nome no diretorio*/
 // 			if(strlen(dir_list[0]) < 18)
 // 				strncpy(data.dir[i].filename, dir_list[pos], strlen(dir_list[pos]));
-// 			else 
+// 			else
 // 				strncpy(data.dir[i].filename, dir_list[pos], 17);
 // 			data.dir[i].attributes = 1; //1 == diretorio, 0 == arquivo
 
@@ -116,7 +121,6 @@ int load()
 // 			fat[block] = 0xffff; //fim de arquivo
 
 // 			save_fat();
-			
 
 // 			write_data_cluster(index, data); //atualiza o diretorio pai no disco
 // 			write_data_cluster(block, new_dir); //grava o diretorio no disco
@@ -129,31 +133,41 @@ int load()
 // 	return 0;
 // }
 
-
-  data_cluster lerCluster(int index)
-{	
+data_cluster lerCluster(int index)
+{
 	FILE *arq = fopen("fat.part", "rb");
 	data_cluster cluster;
-	if(arq == NULL) {
+	if (arq == NULL)
+	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	memset(&cluster,0x00,CLUSTER_SIZE);
-	fseek(arq, index*CLUSTER_SIZE, SEEK_SET);
+	memset(&cluster, 0x00, CLUSTER_SIZE);
+	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);
 	fread(&cluster, CLUSTER_SIZE, 1, arq);
 	fclose(arq);
 	return cluster;
 }
 
-void salvarCluster(int index,  data_cluster cluster)
+void salvarCluster(int index, data_cluster cluster)
 {
 	FILE *arq = fopen("fat.part", "rb+");
-	if(arq == NULL) {
+	if (arq == NULL)
+	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	fseek(arq, index*CLUSTER_SIZE, SEEK_SET);
-	fread(&cluster, index*CLUSTER_SIZE, 1, arq);
+	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);
+	fread(&cluster, index * CLUSTER_SIZE, 1, arq);
 	fclose(arq);
 }
 
+void separaString(char *string1, char *string2, char *string3)
+{
+	//recebe uma string e divide ela em duas: a primeira vai até o primeiro espaço
+	char *aux = (char *)malloc(sizeof(char) * 50);
+	strcpy(aux, string1);
+	strcpy(string2, strtok(aux, " "));
+	//a segunda parte do ponto onde parou o último uso da função strtok e vai até o final
+	strcpy(string3, strtok(NULL, "\0"));
+}
