@@ -1,5 +1,4 @@
 #include "tp.h"
-
 int init(){
 	int i = 0; 
 	FILE *arq = fopen("fat.part","wb");
@@ -23,24 +22,27 @@ int init(){
 		fat[i] = 0x00;
 	}
 	//FAT
-	fwrite(fat, sizeof(uint16_t), 4096, arq);//salva o fat no arquivo de 4096 entradas de 16 bits
+	fwrite(fat, sizeof(uint16_t), 4096, arq); //salva o fat no arquivo de 4096 entradas de 16 bits
 	//Root dir
-	memset(root_dir, 0x00,sizeof(root_dir));//1 cluster 
-	fwrite(root_dir, sizeof(dir_entry_t), 32, arq);//salva o root_dir no arquivo (32 entradas de diretório)
+	memset(root_dir, 0x00, sizeof(root_dir));				//1 cluster
+	fwrite(root_dir, sizeof(dir_entry_t), 32, arq); //salva o root_dir no arquivo (32 entradas de diretório)
 	//Data Cluesters
 	uint8_t data[CLUSTER_SIZE];
-	memset(data, 0x00, CLUSTER_SIZE);//cluster
+	memset(data, 0x00, CLUSTER_SIZE); //cluster
 	i = 0;
-	for(i ; i < 4086; i++){// 4086 clusters
-		fwrite(data, 1, CLUSTER_SIZE, arq);//salvar cluster no arquivo fat.part
+	for (i; i < 4086; i++)
+	{																			// 4086 clusters
+		fwrite(data, 1, CLUSTER_SIZE, arq); //salvar cluster no arquivo fat.part
 	}
 	fclose(arq);
 	return 1;
 }
 
-int load(){
+int load()
+{
 	FILE *arq = fopen("fat.part", "rb");
-	if(arq == NULL) {
+	if (arq == NULL)
+	{
 		printf("ERRO ao abrir arquivo fat\n");
 		return 0;
 	}
@@ -154,3 +156,4 @@ void salvarCluster(int index,  data_cluster cluster)
 	fread(&cluster, index*CLUSTER_SIZE, 1, arq);
 	fclose(arq);
 }
+
