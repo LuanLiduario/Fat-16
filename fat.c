@@ -165,9 +165,13 @@ void salvarCluster(int index, data_cluster cluster)
 void separaString(char *string1, char *string2, char *string3)
 {
 	//recebe uma string e divide ela em duas: a primeira vai até o primeiro espaço
-	char *aux = (char *)malloc(sizeof(char) * 50);
-	strcpy(aux, string1);
-	strcpy(string2, strtok(aux, " "));
-	//a segunda parte do ponto onde parou o último uso da função strtok e vai até o final
-	strcpy(string3, strtok(NULL, "\0"));
+	// char *aux = (char *)malloc(sizeof(char) * 50);
+	// strcpy(aux, string1);
+	strcpy(string2, strtok(string1, " "));
+	if(strlen(string1) == strlen(string2)){
+		strcpy(string3, "");
+	}else{
+		//a segunda parte do ponto onde parou o último uso da função strtok e vai até o final
+		strcpy(string3, strtok(NULL, "\0"));
+	}
 }

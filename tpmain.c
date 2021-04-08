@@ -34,14 +34,17 @@ int main()
   int carregado = 0; // variavel 0-fat não carregada e 1-para fat carregada
   char *linhaComando = (char *)malloc(sizeof(char) * 50);
   char *comando = (char *)malloc(sizeof(char) * 50);
-
+  char *parametros = (char *)malloc(sizeof(char) * 50);
   do
   {
-
+    strcpy(linhaComando, "");
+    strcpy(comando, "");
+    strcpy(parametros, "");
     printDir();
     gets(linhaComando);
     fflush(stdin);
-    comando = getComando(linhaComando);
+   // comando = getComando(linhaComando);
+    separaString(linhaComando,comando,parametros);
     printf("%s\n", comando);
 
     if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || strcmp(comando, "exit") == 0)
