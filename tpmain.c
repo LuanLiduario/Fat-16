@@ -77,7 +77,7 @@ int main()
       {
         printf("write\n");
       }
-      else if (strcmp(comando, "append") == 0)
+      else if (strcmp(comando, "append") == 0)  mkdir pasta criar
       {
         printf("append\n");
       }

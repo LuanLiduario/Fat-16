@@ -47,6 +47,10 @@ dir_entry_t root_dir[32]; // diretorio raiz
 //assinatura das funções
 int init();
 int load();
+void mkdir(char *diretorio)
+
+int separaDiretorio(char *diretorio);
+
 
 data_cluster lerCluster(int index);
 void salvarCluster(int index, data_cluster cluster);
