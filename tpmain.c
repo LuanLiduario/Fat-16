@@ -44,9 +44,7 @@ int main()
     gets(linhaComando);
     fflush(stdin);
    // comando = getComando(linhaComando);
-    separaString(linhaComando,comando,parametros);
-    printf("%s\n", comando);
-
+    separaString(linhaComando,comando,parametros," ");
     if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || strcmp(comando, "exit") == 0)
     {
       if (strcmp(comando, "init") == 0)
@@ -59,15 +57,15 @@ int main()
       }
       else if (strcmp(comando, "ls") == 0)
       {
-        printf("ls\n");
+        ls(parametros);
       }
       else if (strcmp(comando, "mkdir") == 0)
       {
-        printf("mkdir\n");
+        mkdir(parametros);
       }
       else if (strcmp(comando, "create") == 0)
       {
-        printf("create\n");
+        create(parametros);
       }
       else if (strcmp(comando, "unlink") == 0)
       {
@@ -77,7 +75,7 @@ int main()
       {
         printf("write\n");
       }
-      else if (strcmp(comando, "append") == 0)  mkdir pasta criar
+      else if (strcmp(comando, "append") == 0) // mkdir pasta criar
       {
         printf("append\n");
       }

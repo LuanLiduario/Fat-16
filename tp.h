@@ -47,7 +47,9 @@ dir_entry_t root_dir[32]; // diretorio raiz
 //assinatura das funções
 int init();
 int load();
-void mkdir(char *diretorio)
+void ls(char *diretorio);
+void mkdir(char *diretorio);
+void create(char *dir);
 
 void separaDiretorio(char *diretorio, int *numDir);
 
@@ -55,4 +57,6 @@ void separaDiretorio(char *diretorio, int *numDir);
 data_cluster lerCluster(int index);
 void salvarCluster(int index, data_cluster cluster);
 
-void separaString(char *string1, char *string2, char *string3);
+void separaString(char *string1, char *string2, char *string3,char * separador);
+//int encontrarDir(char * diretorio, char * aux);
+int procurarDIr(char *diretorio, char * aux);
