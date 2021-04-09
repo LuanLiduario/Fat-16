@@ -36,7 +36,7 @@ com 32 bytes cada = 1024 bytes ou bloco de dados de 1024 bytes*/
 //typedef union _data_cluster data_cluster;
 typedef union
 {
-	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)];
+	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)];//1024 bytes / 32 bytes = 32 posições
 	uint8_t data[CLUSTER_SIZE];
 } data_cluster;
 
@@ -49,7 +49,7 @@ int init();
 int load();
 void mkdir(char *diretorio)
 
-int separaDiretorio(char *diretorio);
+void separaDiretorio(char *diretorio, int *numDir);
 
 
 data_cluster lerCluster(int index);
