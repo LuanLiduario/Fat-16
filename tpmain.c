@@ -69,7 +69,7 @@ int main()
       }
       else if (strcmp(comando, "unlink") == 0)
       {
-        printf("unlink\n");
+        unlink(parametros);
       }
       else if (strcmp(comando, "write") == 0)
       {
