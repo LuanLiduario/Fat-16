@@ -119,7 +119,33 @@ void salvarCluster(int index, data_cluster cluster){
 
 //strings
 
-void separaString(char *string1, char *string2, char *string3,char * separador)
+void getString(char *parametro, char *string, char *diretorio){
+	int j = 0,verifica = 0;
+	printf("%s\n",parametro);
+	for (int i = 1; i <= strlen(parametro); i++)
+	{
+		if(verifica == 0){
+			if(parametro[i] == '"'){
+				string[j] = '\0';
+				j = 0;
+				verifica++;
+			}else{
+				string[j] == parametro[i];
+				j++;
+			}
+		}else{
+			if(parametro[i] == '\0' || parametro[i] == '\n'){
+				diretorio[j] = '\0';
+				return;
+			}else{
+				diretorio[j] == parametro[i];
+				j++;
+			}
+		}
+		
+	}
+}
+void separaString(char *string1, char *string2, char *string3,char * separador)// write oi oi  /asdgkqai
 {
 	int tam = strlen(string1);
 	strcpy(string2, strtok(string1,separador));

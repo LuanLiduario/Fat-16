@@ -2,7 +2,7 @@
 char *getComando(char *linhaComando)
 {
   int tam = strlen(linhaComando);
-  char *comando = (char *)malloc(sizeof(char) * 50);
+  char *comando = (char *)malloc(sizeof(char) * STRINGS_SIZE);
   printf("%d\n", tam);
   for (int i = 0; i < tam; i++)
   {
@@ -23,24 +23,19 @@ char *getComando(char *linhaComando)
   return comando;
 }
 
-void printDir()
-{
-  printf("$");
-}
-
 int main()
 {
 
   int carregado = 0; // variavel 0-fat não carregada e 1-para fat carregada
-  char *linhaComando = (char *)malloc(sizeof(char) * 50);
-  char *comando = (char *)malloc(sizeof(char) * 50);
-  char *parametros = (char *)malloc(sizeof(char) * 50);
+  char *linhaComando = (char *)malloc(sizeof(char) * STRINGS_SIZE);
+  char *comando = (char *)malloc(sizeof(char) * STRINGS_SIZE);
+  char *parametros = (char *)malloc(sizeof(char) * STRINGS_SIZE);
   do
   {
     strcpy(linhaComando, "");
     strcpy(comando, "");
     strcpy(parametros, "");
-    printDir();
+    printf("$");
     gets(linhaComando);
     fflush(stdin);
    // comando = getComando(linhaComando);
@@ -77,11 +72,11 @@ int main()
       }
       else if (strcmp(comando, "append") == 0) // mkdir pasta criar
       {
-        printf("append\n");
+         append(parametros);
       }
       else if (strcmp(comando, "read") == 0)
       {
-        printf("read\n");
+        read(parametros);
       }
       else if (strcmp(comando, "exit") == 0)
       {

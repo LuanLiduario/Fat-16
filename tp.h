@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define CLUSTER_SIZE 1024 //numero de clusters
+#define STRINGS_SIZE 50 // TAMNHO LIMITE DAS STRINGS
 
 /*Informa¸c˜oes sobre o valor das entradas na FAT de 16 bits:
 0x0000 -> cluster livre
@@ -45,20 +46,24 @@ typedef union
 dir_entry_t root_dir[32]; // diretorio raiz
 
 //assinatura das funções
+//funcoes fat
 int init();
 int load();
 void ls(char *diretorio);
 void mkdir(char *diretorio);
 void create(char *dir);
-
-void separaDiretorio(char *diretorio, int *numDir);
-
-
+void unlink(char *diretorio);
+void write(char * paramentros);
+void append (char* parametros);
+//funcoes string
+void separaString(char *string1, char *string2, char *string3,char * separador);
+data_cluster* quebrarStringClusters(char *string, int *numClusters);
+void getString(char *parametro, char *string, char *diretorio);
+//funcoes diretorio
+int procurarDIr(char *diretorio, char * aux, int procura);
+int getNumDiretorios(char *caminho);
+//funcoes cluesters
 data_cluster lerCluster(int index);
 void salvarCluster(int index, data_cluster cluster);
-
-void separaString(char *string1, char *string2, char *string3,char * separador);
-//int encontrarDir(char * diretorio, char * aux);
-int procurarDIr(char *diretorio, char * aux, int procura);
-int procurarDirPai(char *diretorio, char * dirPai);
-data_cluster* quebrarStringClusters(char *string, int *numClusters);
+data_cluster lerCluster(int index);
+void salvarCluster(int index, data_cluster cluster);
