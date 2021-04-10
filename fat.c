@@ -91,6 +91,10 @@ void mkdir(char *diretorio){
 		printf("Caminho invalido\n");
 		return;
 	}
+	if(diretorio == "/"){
+		printf("NAO E POSSIVEL CRIAR O DIRETORIO RAIZ\n");
+		return;
+	}
 	char *dirAtual = (char *)malloc(sizeof(char) * 50);// Recebe o nome do diretorio no caminho
 	//char *dirAtual = (char *)malloc(sizeof(char) * 50); // Recebe nome do diretorio atual
 
@@ -109,12 +113,17 @@ void mkdir(char *diretorio){
 
 		for( j = 0; j < 32; j++){
 			printf("%s-%s\n",dirAtual,data.dir[j].filename);
-			if(strcmp(data.dir[j].filename, dirAtual) == 0){ //verifica se ja existe diretorio com este nome
+			if(strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 1){ //verifica se ja existe diretorio com este nome
 				printf("DIRETORIO JA EXISTE\n");
 				free(dirAtual);
 				return;
 			}
 			if(data.dir[j].first_block == 0) {
+				break;
+			}
+		}
+
+
 				if(strlen(dirAtual) < 18){
 					strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));
 				}
@@ -133,14 +142,9 @@ void mkdir(char *diretorio){
 						return;
 					}
 				}
-			}
-		}
+		
 
 		printf("DIRETORIO CHEIO\n");
-	}else{
-		printf("DIR NAO ENCONTRADO\n");
-		printf("(%s)\n",dirAtual);
-		printf("%d\n",index);
 	}
 	free(dirAtual);
 }
@@ -159,83 +163,111 @@ void create(char *diretorio){
 		int indexBloco,j;
 		memset(novoDiretorio.dir, 0x0000, 32 * sizeof(dir_entry_t));
 		for( j = 0; j < 32; j++){
-			if(strcmp(data.dir[j].filename, dirAtual) == 0){ //verifica se ja existe arquivo com este nome
+			if(strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 0){ //verifica se ja existe arquivo com este nome
 				printf("ARQUIVO JA EXISTE\n");
 				free(dirAtual);
 				return;
 			}
 			if(data.dir[j].first_block == 0) {
-				if(strlen(dirAtual) < 18){
-					strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));
-				}
-				else{
-					strncpy(data.dir[j].filename, dirAtual, 17);
-				}
-				data.dir[j].attributes = 0; //0 - arquivo
-				for(indexBloco = 10; indexBloco < 4096; indexBloco++){//percorre a fat
-					if(fat[indexBloco] == 0x0000){//procura uma posição vazia
-						data.dir[j].first_block = indexBloco;
-						fat[indexBloco] = 0xffff; 
-						atualizarFat();//atualiza a fat no arquivo
-						salvarCluster(index, data); //atualiza o cluster
-						salvarCluster(indexBloco, novoDiretorio); // salva o novo diretorio no arquivo
-						free(dirAtual);
-						return;
-					}
-				}
+				break;
 			}
 		}
 
-		printf("DIRETORIO CHEIO\n");
+		if(j == 32){
+			printf("DIRETORIO CHEIO\n");
+			free(dirAtual);
+			return;
+		}
+
+		if(strlen(dirAtual) < 18){
+			strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));
+		}
+		else{
+			strncpy(data.dir[j].filename, dirAtual, 17);
+		}
+		data.dir[j].attributes = 0; //0 - arquivo
+		for(indexBloco = 10; indexBloco < 4096; indexBloco++){//percorre a fat
+			if(fat[indexBloco] == 0x0000){//procura uma posição vazia
+				data.dir[j].first_block = indexBloco;
+				fat[indexBloco] = 0xffff; 
+				atualizarFat();//atualiza a fat no arquivo
+				salvarCluster(index, data); //atualiza o cluster
+				salvarCluster(indexBloco, novoDiretorio); // salva o novo diretorio no arquivo
+				free(dirAtual);
+				return;
+			}
+		}
 	}
 	free(dirAtual);
 }
 
-// void unlink(char *diretorio){
-// 	if(diretorio == NULL || strcmp(diretorio,"") == 0){
-// 		printf("Caminho invalido\n");
-// 		return;
-// 	}
-// 	printf("Caminho :::%s\n",diretorio);
-// 	char *dirAtual = (char *)malloc(sizeof(char) * 50);// Recebe o nome do diretorio no caminho que devera ser apagado
-// 	int index;
-// 	index = procurarDirPai(diretorio, dirAtual);
-// 	// if(index != -1){
-// 	// 	data_cluster aux;
-// 	// 	data_cluster data = lerCluster(index);// ler cluster que deve ser apagado
-// 	// 	dir_entry_t dirVazio;
-// 	// 	int j;
-// 	// 	memset(&dirVazio, 0x00, 32);
-// 	// 	printf("PASTA A SER EXCLUIDA :::%s:::\n",dirAtual);
-// 	// 	for(int i = 0; i < 32; i++){
-// 	// 		if(data.dir[i].first_block != 0) { 
-// 	// 			if(data.dir[i].attributes == 1){ //diretorio
-// 	// 				aux = lerCluster(data.dir[i].first_block);
-// 	// 				for(j = 0; j < 32 ; j++){
-// 	// 					if(aux.dir[i].first_block != 0){
-// 	// 						break;
-// 	// 					}
-// 	// 				}
-// 	// 				if(j == 32){
-// 	// 					printf("ESVAZIE O DIRETORIO ANTES DE FAZER UNLINK\n");
-// 	// 					return;
-// 	// 				}
-// 	// 				else{
-// 	// 					fat[data.dir[i].first_block] = 0;
-// 	// 					data.dir[i] = dirVazio;
-// 	// 					salvarCluster(index, data);
-// 	// 					atualizarFat();
-// 	// 					printf("SUCESSO\n");
-// 	// 					return;
-// 	// 				}
-// 	// 			} 
-// 	// 		}
-// 	// 	}
-// 	// }
-// 	free(dirAtual);
-// }
-int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - atual nao existe, 2 - atual existe, 3 arquivo
+void unlink(char *diretorio){
+	if(diretorio == NULL || strcmp(diretorio,"") == 0){
+		printf("Caminho invalido\n");
+		return;
+	}
+	if(diretorio == "/"){
+		printf("NAO E POSSIVEL EXCLUIR O DIRETORIO RAIZ\n");
+		return;
+	}
+	printf("Caminho :::%s\n",diretorio);
+	char *dirAtual = (char *)malloc(sizeof(char) * 50);// Recebe o nome do diretorio no caminho que devera ser apagado
+	int index;
+	index = procurarDIr(diretorio, dirAtual,1);
+	if(index != -1){
+		data_cluster aux;
+		data_cluster data = lerCluster(index);// ler cluster que deve ser apagado
+		dir_entry_t dirVazio;
+		int j;
+		memset(&dirVazio, 0x00, 32);
+		printf("PASTA A SER EXCLUIDA :::%s:::\n",dirAtual);
+		for(int i = 0; i < 32; i++){
+			if(data.dir[i].first_block != 0 && strcmp(dirAtual,data.dir[i].filename) == 0){
+				if(data.dir[i].attributes == 1){
+					aux = lerCluster(data.dir[i].first_block);
+					for(j = 0; j < 32 ; j++){
+						if(aux.dir[j].first_block != 0){
+							break;
+						}
+					}
+					if(j == 32){
+						fat[data.dir[i].first_block] = 0;
+						data.dir[i] = dirVazio;
+						salvarCluster(index, data);
+						atualizarFat();
+						printf("DIRETORIO APAGADO\n");
+						free(dirAtual);
+						return;
+					}else{
+						printf("ESVAZIE O DIRETORIO ANTES DE FAZER UNLINK\n");
+						free(dirAtual);
+						return;
+					}
+				}
+				if(data.dir[i].attributes == 0){
+					int indexaux;
+					j = data.dir[i].first_block;
+					while(fat[j] != 0xffff){ 
+						index = j;
+						j = fat[indexaux];
+						fat[indexaux] = 0x0000;
+					}
+					data.dir[i] = dirVazio; 
+					salvarCluster(index, data);
+					atualizarFat();
+					printf("ARQUIVO APAGADO\n");
+					free(dirAtual);
+					return;
+				}
+				printf("ERRO DE attributes\n");
+			}
+		}
+	}
+	free(dirAtual);
+}
+int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - pai, 2 - atual, 3 arquivo
 	int index = 9, j =0, k = 0;
+	int indexPai = index;
 	if(strcmp(diretorio, "/") == 0){
 		return index;//index
 	}
@@ -269,7 +301,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - atual nao e
 					break;
 				} 
 				else{//arquivo
-					if(numDiretorios == 0){
+					if(numDiretorios == 0 &&  procura == 3){
 						printf("E UM ARQUIVO\n");
 						return index;
 					}
@@ -278,20 +310,14 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - atual nao e
 		}
 
 		if(procura == 1){//se for uma procura por um diretorio que será criado não deverá encontrar
-			// if(k == 32 && numDiretorios == 0){// percorreu todo cluster e não encontrou nenhum diretorio com nome de dirAtual
-			// 	return index;
-			// }else if((numDiretorios != 0 && k == 32)){
-			// 	printf("DIRETORIO NAO ENCONTRADO\n");
-			// 	return -1;
-			// }
 			if(k == 32 || numDiretorios == 0){
 				if(numDiretorios != 0){
 					printf("DIRETORIO NAO ENCONTRADO\n");
 					return -1;
 				}
 				if(k < 32){
-					printf("DIRETORIO JA EXISTE\n");
-					return -1;
+					//printf("DIRETORIO JA EXISTE\n");
+					return indexPai;
 				}
 				return index;
 			}
@@ -306,6 +332,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - atual nao e
 			//printf("J>>%d<<%d>>>DIR: %s\n",k,numDiretorios,dirAtual);
 			numDiretorios--;
 			j = 0;
+			indexPai = index;
 		}else{
 			dirAtual[j] = diretorio [i];
 			j++;
@@ -313,163 +340,6 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - atual nao e
 	}
 	return index;
 }
-
-// int procurarDIr(char *diretorio, char * dirAtual){
-// 	int j = 0, index = 9, k = 0;
-// 	data_cluster data;
-// 	int numDiretorios = getNumDiretorios(diretorio);//tenho o numero de diretorios
-// 	if(diretorio[0] == '/'){//verifica se é um paramentro valido
-// 		if(strcmp(diretorio, "/") == 0){//diretorio raiz
-// 			return index;
-// 		}
-// 		if(numDiretorios == 0 && strlen(diretorio) == 1){
-// 			for(int i = 1; i <=strlen(diretorio);i++){
-// 				if(diretorio[i] == '/' || diretorio[i] == '\n' || diretorio[i] == '\0'){
-// 					dirAtual[j] = '\0';
-// 					return index;
-// 				}
-// 				dirAtual[j] = diretorio[i];
-// 				j++;
-// 			}
-// 			return index;
-// 		}
-// 		data = lerCluster(index);//ler diretorio raiz
-// 		for(int i = 1; i <= strlen(diretorio); i++){//percorre o diretorio recebido
-// 			if(diretorio[i] != '/' && diretorio[i] != '\n' && diretorio[i] != '\0'){
-// 				dirAtual[j] = diretorio[i];
-// 				j++;
-// 			}else{
-// 				dirAtual[j] = '\0';
-// 				printf("%d TEM Q TER UMA MERDA DE STRING :::%s\n",numDiretorios,dirAtual);
-// 				for(k = 0; k < 32; k++){
-// 					if( strcmp(data.dir[k].filename, dirAtual) == 0 && data.dir[k].first_block != 0 && data.dir[k].attributes == 1 ) {//achei dir
-// 						index = data.dir[k].first_block;
-// 						data = lerCluster(index);
-// 						break;
-// 					}
-// 				}
-// 				if(k == 32){// nao encontrou diretorio
-// 					printf("%s,%d\n",dirAtual,numDiretorios );
-// 					if(numDiretorios != 0){//verifica se é o ultimo
-// 						printf("DIRETORIO NAO ENCONTRADO\n");
-// 						return -1;
-// 					}else{
-// 						return index;
-// 					}
-// 				}else{
-// 					j = 0;
-// 					strcpy(dirAtual, "");
-// 				}
-// 				numDiretorios--;
-// 			}
-// 		}
-
-// 	}else{
-// 		printf("PARAMETRO INVALIDO\n");
-// 		return -1;
-// 	}
-
-
-// }
-
-// int procurarDIr(char *diretorio, char * dirAtual){
-// 	int j = 0, index = 9, k = 0,n;
-// 	n = getNumDiretorios(diretorio);
-// 	data_cluster data;
-// 	if(diretorio[0] == '/'){
-// 		if(diretorio == NULL || strcmp(diretorio, " ") == 0 || strcmp(diretorio, "/") == 0){
-// 			for(int i = 1; i <=strlen(diretorio);i++){
-// 				if(diretorio[i] == '/' || diretorio[i] == '\n' || diretorio[i] == '\0'){
-// 					dirAtual[j] = '\0';
-// 					return index;
-// 				}
-// 				dirAtual[j] = diretorio[i];
-// 				j++;
-// 			}
-// 		}
-// 		int i =0;
-// 		data = lerCluster(index);
-// 		n--;
-// 		do{
-// 			printf("DO\n");
-// 			if(diretorio[i] == '/' || diretorio[i] == '\n' || diretorio[i] == '\0'){// /teste/n
-// 				dirAtual[j] = '\0';
-// 				printf("DIR ATUAL ::: %s\n",dirAtual);
-// 				for(k = 0; k < 32; k++){
-// 					if( strcmp(data.dir[k].filename, dirAtual) == 0 && data.dir[k].first_block != 0 && data.dir[k].attributes == 1 ) {//achei dir
-// 						index = data.dir[k].first_block;
-// 						data = lerCluster(index);
-// 						break;
-// 					}
-// 				}
-// 				if(k == 32){// nao encontrou diretorio
-// 					if( n == 1 )
-// 					{//verifica se é o ultimo
-// 						printf("2DIR ATUAL ::: %s\n",dirAtual);
-// 						return index;
-// 					}else{
-// 						printf("DIRETORIO NAO ENCONTRADO\n");
-// 						return -1;
-// 					}
-// 				}else{
-// 					n--;
-// 					j = 0;
-// 					strcpy(dirAtual, "");
-// 				}
-// 			}else{
-// 				dirAtual[j] = diretorio[i];
-// 				j++;
-// 			}
-// 			i++;
-// 		}while(i <= strlen(diretorio)+1);
-
-// 		return -1;
-
-// 	}else{
-// 		printf("PARAMETRO INVALIDO\n");
-// 		return -1;
-// 	}
-
-	
-
-	
-// 	// if(diretorio == NULL || strcmp(diretorio, " ") == 0 ||strcmp(diretorio, "/") == 0){
-// 	// 	return index;
-// 	// }else{
-// 	// 	if(diretorio[0] == '/'){
-// 	// 		int numDiretorios,k,numDiretoriosFalta;
-// 	// 		numDiretorios = getNumDiretorios(diretorio);
-// 	// 		printf("NUM %d\n",numDiretorios);
-// 	// 		dirAtual = strtok(diretorio, "/");
-// 	// 		numDiretoriosFalta = numDiretorios;
-// 	// 		for(int i = 1; i < numDiretorios; i++){
-// 	// 			numDiretoriosFalta--;
-// 	// 			data = lerCluster(index);
-// 	// 			for(k = 0; k < 32; k++){
-// 	// 				if( strcmp(data.dir[k].filename, dirAtual) == 0 && data.dir[k].first_block != 0 && data.dir[k].attributes == 1 ) {//achei dir
-// 	// 					index = data.dir[k].first_block;
-// 	// 					data = lerCluster(data.dir[k].first_block);
-// 	// 					break;
-// 	// 				}
-// 	// 			}
-// 	// 			if(k == 32){
-// 	// 				if(numDiretoriosFalta == 0){
-// 	// 					return index;
-// 	// 				}else{
-// 	// 					printf("DIRETORIO NAO ENCONTRADO\n");
-// 	// 					return -1;
-// 	// 				}
-// 	// 			}
-// 	// 			dirAtual = strtok(NULL, "/");
-// 	// 		}
-// 	// 	}else{
-// 	// 		printf("DIRETORIO NAO ENCONTRADO\n");
-// 	// 		return -1;
-// 	// 	}
-// 	// }
-// 	// printf("PASSOU TD\n");
-// 	// return -1;
-// }
 
 int getNumDiretorios(char *caminho){
 	int numDiretorios = 0;
