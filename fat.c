@@ -278,32 +278,46 @@ void write(char * paramentros){
 	index = procurarDIr(diretorio,dirAtual,3);
 
 	if(index != -1){
-			int num_buffer;
-			data_cluster *buffer;
-			buffer = quebrarStringClusters(string, &num_buffer); 
-			int index_final = index;
-			while(fat[index_final] != 0xffff){ //caso tenha blocos extras que não são mais necessarios
-				int t = index_final;
-				index_final = fat[index_final]; 
-				fat[t] = 0;
-			}
-			fat[index_final] = 0;
-			fat[index] = 0xffff;
-
-			/*escreve o primeiro cluster*/
-			salvarCluster(index, buffer[0]);
-			if(num_buffer > 1)
-				for(int i = 1; i < num_buffer; i++){ //grava o restante dos clusters
-					int block;
-					for(block = 10; block < 4096 && fat[block] != 0x0000; block++);
-					fat[index] = block;
-					index = block;
-					fat[index] = 0xffff;
-					salvarCluster(index, buffer[i]);
+			data_cluster data = lerCluster(index);
+			int i;
+			for( i = 0; i < 32; i++){
+				if(strcmp(data.dir[i].filename,dirAtual) == 0 && data.dir[i].first_block != 0 && data.dir[i].attributes == 0){
+					index = data.dir[i].first_block;
+					break;
 				}
-			
+			}
+			if(i == 32){
+				printf("ARQUIVO NAO ENCONTRADO NO DIRETORIO\n");
+				return;
+			}
+			int numClusters;
+			data_cluster *clusters;
+			clusters = quebrarStringClusters(string, &numClusters); 
+			int index_final = index, indexBloco;
+			while(fat[index_final] != 0xffff){ 
+				indexBloco = index_final;
+				index_final = fat[index_final]; 
+				fat[indexBloco] = 0x0000;
+			}
+			fat[index_final] = 0x0000;
+			fat[index] = 0xffff;
+			salvarCluster(index, clusters[0]);
+			if(numClusters > 1){
+				for(i = 1; i < numClusters; i++){
+					indexBloco;
+					for(indexBloco = 10; indexBloco < 4096 ; indexBloco++){
+						if(fat[indexBloco] != 0x0000){
+							break;
+						}
+					}
+					fat[index] = indexBloco;
+					index = indexBloco;
+					fat[index] = 0xffff;
+					salvarCluster(index, clusters[i]);
+				}
+			}
 			atualizarFat();
-			printf("Arquivo sobrescrito com sucesso\n");
+			printf("String salva\n");
 	}else{
 		printf("ARQUIVO NAO ENCONTRADO\n");
 	}
@@ -311,211 +325,5 @@ void write(char * paramentros){
 }
 
 
-int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - pai, 2 - atual, 3 arquivo
-	int index = 9, j =0, k = 0;
-	int indexPai = index;
-	
-	if(strcmp(diretorio, "/") == 0){
-		return index;//index
-	}
-	
-	if(diretorio[0] != '/'){
-		printf("PARAMETRO INVALIDO\n");
-		return -1;
-	}
-	int numDiretorios = getNumDiretorios(diretorio);
-	data_cluster data = lerCluster(index);
-	
-	for(int i = 1; i <= strlen(diretorio); i++){
-		if(diretorio[i] == '/' || diretorio[i] == '\0' || diretorio[i] == '\n'){//fim do nome de um diretorio
-			dirAtual[j] = '\0';
 
-		for(k = 0; k< 32; k++){
-
-			if(strcmp(data.dir[k].filename,dirAtual) == 0 && data.dir[k].first_block != 0) {// verifica se acha um diretorio no cluster com o nome do dirAtual
-				if(data.dir[k].attributes == 1){//existe diretorio
-					// if(numDiretorios != 0){
-						index = data.dir[k].first_block;
-						// if(numDiretorios == 0){
-						// 	return index;
-						// }
-
-					// }
-					data = lerCluster(index);
-					break;
-				} 
-				else{//arquivo
-					if(numDiretorios == 0 &&  procura == 3){
-						//printf("E UM ARQUIVO\n");
-						return index;
-					}
-				}
-			}
-		}
-
-		if(procura == 1){//se for uma procura por um diretorio que será criado não deverá encontrar
-			if(k == 32 || numDiretorios == 0){
-				if(numDiretorios != 0){
-					printf("DIRETORIO NAO ENCONTRADO\n");
-					return -1;
-				}
-				if(k < 32){
-					//printf("DIRETORIO JA EXISTE\n");
-					return indexPai;
-				}
-				return index;
-			}
-		}else if(procura == 2){// se for uma procura por um diretorio que ja existe deverá encontrar
-			if(k == 32 && numDiretorios == 0){
-				printf("DIRETORIO NAO ENCONTRADO\n");
-				return -1;
-			}else if(k < 32 && numDiretorios == 0){// percorreu todo cluster e encontrou um diretorio com nome de dirAtual
-				return index;
-			}
-		}
-			//printf("J>>%d<<%d>>>DIR: %s\n",k,numDiretorios,dirAtual);
-			numDiretorios--;
-			j = 0;
-			indexPai = index;
-		}else{
-			dirAtual[j] = diretorio [i];
-			j++;
-		}
-	}
-	return -1;
-}
-
-int getNumDiretorios(char *caminho){
-	int numDiretorios = 0;
-	int i = 0;
-	do{
-		if(caminho[i] == '/'){
-			numDiretorios++;
-		}
-		i++;
-	}while(caminho[i] != '\0' && caminho[i] != '\n');
-	return numDiretorios-1;
-}
-
-int procurarDirPai(char *diretorio, char * dirPai){
-	int j = 0, index = 9, k = 0,indexAnterior = 9;
-	char *aux = (char *)malloc(sizeof(char) * 50);
-	data_cluster data;
-	for(int i = 0; i <= strlen(diretorio); i++){//percorre o diretorio recebido
-		if(diretorio[i] != '/' && diretorio[i] != '\n' && diretorio[i] != '\0'){
-			aux[j] = diretorio[i];
-			j++;
-		}else{
-			aux[j] = '\0';
-			data = lerCluster(index);
-			indexAnterior = index;
-			for(k = 0; k < 32; k++){
-				if( strcmp(data.dir[k].filename, aux) == 0 && data.dir[k].first_block != 0 && data.dir[k].attributes == 1 ) {//achei dir
-					index = data.dir[k].first_block;
-					break;
-				}
-			}
-			if(k == 32){// nao encontrou diretorio
-				if(( diretorio[i+1] != '\0' && diretorio[i] != '\0' && diretorio[i] != '\n' && diretorio[i+1] != '\n')){//verifica se é o ultimo
-					printf("DIRETORIO NAO ENCONTRADO\n");
-					return -1;
-				}else{
-					strcpy(dirPai,aux);
-					return indexAnterior;
-				}
-			}else{
-				j = 0;
-				strcpy(aux, "");
-			}
-		}
-	}
-
-}
-
-void atualizarFat(){
-	FILE *arq = fopen("fat.part", "rb+");
-	if(arq == NULL) {
-		printf("ERRO ao abrir arquivo fat\n");
-		exit(1);
-	}
-	fseek(arq, CLUSTER_SIZE, SEEK_SET);//Aponta para o FAT após o boot_block de 1024 bytes
-	fwrite(fat, sizeof(uint16_t), 4096, arq);//Salva fat
-	fclose(arq);
-}
-
-data_cluster lerCluster(int index)
-{
-	FILE *arq = fopen("fat.part", "rb");
-	data_cluster cluster;
-	if (arq == NULL)
-	{
-		printf("ERRO ao abrir arquivo fat\n");
-		exit(1);
-	}
-	memset(&cluster, 0x00, CLUSTER_SIZE);
-	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);
-	fread(&cluster, CLUSTER_SIZE, 1, arq);
-	fclose(arq);
-	return cluster;
-}
-
-void salvarCluster(int index, data_cluster cluster){
-	FILE *arq = fopen("fat.part", "rb+");
-	if (arq == NULL)
-	{
-		printf("ERRO ao abrir arquivo fat\n");
-		exit(1);
-	}
-	fseek(arq, index * CLUSTER_SIZE, SEEK_SET); // Vai ao índice desejado
-	fwrite(&cluster, CLUSTER_SIZE, 1, arq); // Lê o union e escreve no cluster
-	fclose(arq);
-}
-
-void separaString(char *string1, char *string2, char *string3,char * separador)
-{
-	int tam = strlen(string1);
-	strcpy(string2, strtok(string1,separador));
-	if(tam == strlen(string2)){
-		strcpy(string3, "");
-	}else{
-		//a segunda parte do ponto onde parou o último uso da função strtok e vai até o final
-		strcpy(string3, strtok(NULL, "\n"));
-	}
-}
-
-data_cluster* quebrarStringClusters(char *string, int *numBuffer){
-	data_cluster *buffer;
-	int str_size = strlen(string);
-	int num_clusters = str_size / CLUSTER_SIZE; //numero de clusters cheios
-	int left_over = str_size % CLUSTER_SIZE; //restante 
-	//caso seja necessario apenas um cluster
-	if(num_clusters == 0){
-		buffer = (data_cluster*)malloc(CLUSTER_SIZE);
-		memset(buffer, 0, CLUSTER_SIZE);
-		memcpy(&(buffer)[0], string, str_size);
-		(*numBuffer) = 1;
-		return buffer; //retorna o numero de clusters
-	}
-	else{ //caso mais clusters sejam necessarios
-		int more;
-		if(left_over > 0) //caso tenha mais um resto de string para se guardado
-			more = 1;
-		else more = 0;
-
-		int i;
-		buffer = (data_cluster*)malloc(CLUSTER_SIZE * (num_clusters + more)); //aloca a memoria para o cluster
-		for(i = 0; i < num_clusters; i++){ //quebra a string em varios clusters
-			memset(&(buffer)[i], 0, CLUSTER_SIZE);
-			memcpy(&(buffer)[i].data, &string[i * (CLUSTER_SIZE)], CLUSTER_SIZE);
-			((buffer)[i].data)[CLUSTER_SIZE] = '\0';
-		}
-		if(more){//se tiver um resto que não ocupa exatamente um cluster inteiro
-			memset(&(buffer)[i], 0, CLUSTER_SIZE);
-			memcpy(&(buffer)[i].data, &string[i * (CLUSTER_SIZE)], left_over);
-			(buffer)[i].data[left_over] = '\0';
-		}
-		(*numBuffer) = num_clusters + more;
-		return buffer;
-	}
-}
 
