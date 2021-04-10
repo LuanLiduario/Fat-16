@@ -104,7 +104,6 @@ void mkdir(char *diretorio){
 	// 	index == 9;
 	// }
 	if(index != -1 && strcmp(dirAtual,"") != 0){
-		printf("OLOKO:::%s>\n",dirAtual);
 		data_cluster data = lerCluster(index);
 		data_cluster novoDiretorio;
 		int indexBloco,j;
@@ -142,7 +141,6 @@ void mkdir(char *diretorio){
 						return;
 					}
 				}
-		
 
 		printf("DIRETORIO CHEIO\n");
 	}
@@ -265,26 +263,72 @@ void unlink(char *diretorio){
 	}
 	free(dirAtual);
 }
+
+void write(char * paramentros){
+	char *diretorio = (char *)malloc(sizeof(char) * 50);
+	char *string = (char *)malloc(sizeof(char) * 50);
+	char *dirAtual = (char *)malloc(sizeof(char) * 50);
+	separaString(paramentros,string,diretorio," ");
+
+	if(strcmp(string,"") == 0){
+		printf("string vazia\n");
+	}
+
+	int index;
+	index = procurarDIr(diretorio,dirAtual,3);
+
+	if(index != -1){
+			int num_buffer;
+			data_cluster *buffer;
+			buffer = quebrarStringClusters(string, &num_buffer); 
+			int index_final = index;
+			while(fat[index_final] != 0xffff){ //caso tenha blocos extras que não são mais necessarios
+				int t = index_final;
+				index_final = fat[index_final]; 
+				fat[t] = 0;
+			}
+			fat[index_final] = 0;
+			fat[index] = 0xffff;
+
+			/*escreve o primeiro cluster*/
+			salvarCluster(index, buffer[0]);
+			if(num_buffer > 1)
+				for(int i = 1; i < num_buffer; i++){ //grava o restante dos clusters
+					int block;
+					for(block = 10; block < 4096 && fat[block] != 0x0000; block++);
+					fat[index] = block;
+					index = block;
+					fat[index] = 0xffff;
+					salvarCluster(index, buffer[i]);
+				}
+			
+			atualizarFat();
+			printf("Arquivo sobrescrito com sucesso\n");
+	}else{
+		printf("ARQUIVO NAO ENCONTRADO\n");
+	}
+
+}
+
+
 int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - pai, 2 - atual, 3 arquivo
 	int index = 9, j =0, k = 0;
 	int indexPai = index;
+	
 	if(strcmp(diretorio, "/") == 0){
 		return index;//index
 	}
+	
 	if(diretorio[0] != '/'){
 		printf("PARAMETRO INVALIDO\n");
 		return -1;
 	}
 	int numDiretorios = getNumDiretorios(diretorio);
 	data_cluster data = lerCluster(index);
+	
 	for(int i = 1; i <= strlen(diretorio); i++){
 		if(diretorio[i] == '/' || diretorio[i] == '\0' || diretorio[i] == '\n'){//fim do nome de um diretorio
 			dirAtual[j] = '\0';
-			
-
-			if(numDiretorios == 0){
-				printf("ESSE DEVE SER recebido <%s>\n",dirAtual);
-			}
 
 		for(k = 0; k< 32; k++){
 
@@ -302,7 +346,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - pai, 2 - at
 				} 
 				else{//arquivo
 					if(numDiretorios == 0 &&  procura == 3){
-						printf("E UM ARQUIVO\n");
+						//printf("E UM ARQUIVO\n");
 						return index;
 					}
 				}
@@ -338,7 +382,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura){// 1 - pai, 2 - at
 			j++;
 		}
 	}
-	return index;
+	return -1;
 }
 
 int getNumDiretorios(char *caminho){
@@ -438,3 +482,40 @@ void separaString(char *string1, char *string2, char *string3,char * separador)
 		strcpy(string3, strtok(NULL, "\n"));
 	}
 }
+
+data_cluster* quebrarStringClusters(char *string, int *numBuffer){
+	data_cluster *buffer;
+	int str_size = strlen(string);
+	int num_clusters = str_size / CLUSTER_SIZE; //numero de clusters cheios
+	int left_over = str_size % CLUSTER_SIZE; //restante 
+	//caso seja necessario apenas um cluster
+	if(num_clusters == 0){
+		buffer = (data_cluster*)malloc(CLUSTER_SIZE);
+		memset(buffer, 0, CLUSTER_SIZE);
+		memcpy(&(buffer)[0], string, str_size);
+		(*numBuffer) = 1;
+		return buffer; //retorna o numero de clusters
+	}
+	else{ //caso mais clusters sejam necessarios
+		int more;
+		if(left_over > 0) //caso tenha mais um resto de string para se guardado
+			more = 1;
+		else more = 0;
+
+		int i;
+		buffer = (data_cluster*)malloc(CLUSTER_SIZE * (num_clusters + more)); //aloca a memoria para o cluster
+		for(i = 0; i < num_clusters; i++){ //quebra a string em varios clusters
+			memset(&(buffer)[i], 0, CLUSTER_SIZE);
+			memcpy(&(buffer)[i].data, &string[i * (CLUSTER_SIZE)], CLUSTER_SIZE);
+			((buffer)[i].data)[CLUSTER_SIZE] = '\0';
+		}
+		if(more){//se tiver um resto que não ocupa exatamente um cluster inteiro
+			memset(&(buffer)[i], 0, CLUSTER_SIZE);
+			memcpy(&(buffer)[i].data, &string[i * (CLUSTER_SIZE)], left_over);
+			(buffer)[i].data[left_over] = '\0';
+		}
+		(*numBuffer) = num_clusters + more;
+		return buffer;
+	}
+}
+

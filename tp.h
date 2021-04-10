@@ -61,3 +61,4 @@ void separaString(char *string1, char *string2, char *string3,char * separador);
 //int encontrarDir(char * diretorio, char * aux);
 int procurarDIr(char *diretorio, char * aux, int procura);
 int procurarDirPai(char *diretorio, char * dirPai);
+data_cluster* quebrarStringClusters(char *string, int *numBuffer);
