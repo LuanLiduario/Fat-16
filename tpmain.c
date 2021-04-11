@@ -1,27 +1,4 @@
 #include "tp.h"
-char *getComando(char *linhaComando)
-{
-  int tam = strlen(linhaComando);
-  char *comando = (char *)malloc(sizeof(char) * STRINGS_SIZE);
-  printf("%d\n", tam);
-  for (int i = 0; i < tam; i++)
-  {
-    if (linhaComando[i] != ' ')
-    {
-      comando[i] = linhaComando[i];
-    }
-    else
-    {
-      comando[i] = "\0";
-      tam = strlen(comando);
-      printf("%s\n", comando);
-      printf("%d\n", tam);
-      getchar();
-      return comando;
-    }
-  }
-  return comando;
-}
 
 int main()
 {
@@ -38,8 +15,8 @@ int main()
     printf("$");
     gets(linhaComando);
     fflush(stdin);
-   // comando = getComando(linhaComando);
-    separaString(linhaComando,comando,parametros," ");
+    // comando = getComando(linhaComando);
+    separaString(linhaComando, comando, parametros, " ");
     if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || strcmp(comando, "exit") == 0)
     {
       if (strcmp(comando, "init") == 0)
@@ -72,7 +49,7 @@ int main()
       }
       else if (strcmp(comando, "append") == 0) // mkdir pasta criar
       {
-         append(parametros);
+        append(parametros);
       }
       else if (strcmp(comando, "read") == 0)
       {

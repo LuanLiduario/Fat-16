@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define CLUSTER_SIZE 1024 //numero de clusters
-#define STRINGS_SIZE 50 // TAMNHO LIMITE DAS STRINGS
+#define STRINGS_SIZE 50		// TAMNHO LIMITE DAS STRINGS
 
 /*Informa¸c˜oes sobre o valor das entradas na FAT de 16 bits:
 0x0000 -> cluster livre
@@ -37,7 +37,7 @@ com 32 bytes cada = 1024 bytes ou bloco de dados de 1024 bytes*/
 //typedef union _data_cluster data_cluster;
 typedef union
 {
-	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)];//1024 bytes / 32 bytes = 32 posições
+	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)]; //1024 bytes / 32 bytes = 32 posições
 	uint8_t data[CLUSTER_SIZE];
 } data_cluster;
 
@@ -53,17 +53,18 @@ void ls(char *diretorio);
 void mkdir(char *diretorio);
 void create(char *dir);
 void unlink(char *diretorio);
-void write(char * paramentros);
-void append (char* parametros);
+void write(char *paramentros);
+void append(char *parametros);
 //funcoes string
-void separaString(char *string1, char *string2, char *string3,char * separador);
-data_cluster* quebrarStringClusters(char *string, int *numClusters);
+void separaString(char *string1, char *string2, char *string3, char *separador);
+data_cluster *quebrarStringClusters(char *string, int *numClusters);
 void getString(char *parametro, char *string, char *diretorio);
 //funcoes diretorio
-int procurarDIr(char *diretorio, char * aux, int procura);
+int procurarDIr(char *diretorio, char *aux, int procura);
 int getNumDiretorios(char *caminho);
 //funcoes cluesters
 data_cluster lerCluster(int index);
 void salvarCluster(int index, data_cluster cluster);
 data_cluster lerCluster(int index);
 void salvarCluster(int index, data_cluster cluster);
+//char *getComando(char *linhaComando);
