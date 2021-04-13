@@ -2,7 +2,7 @@
 
 //diretorios
 int procurarDIr(char *diretorio, char *dirAtual, int procura)
-{ // 1 - pai, 2 - atual, 3 arquivo
+{ // 1 - pai, 2 - atual, 3 - arquivo
 	int index = 9, j = 0, k = 0;
 	int indexPai = index;
 

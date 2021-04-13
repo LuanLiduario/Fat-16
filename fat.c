@@ -6,7 +6,7 @@ int init()
 	FILE *arq = fopen("fat.part", "wb");
 	if (arq == NULL)
 	{
-		printf("ERRO ao abrir arquivo fat\n");
+		printf("ERRO AO CRIAR DISCO FAT\n");
 		return 0;
 	}
 	//boot_block
@@ -24,20 +24,20 @@ int init()
 	}
 	fat[9] = 0xffff;
 	for (i; i < 4096; i++)
-	{ //definir o restante das
+	{ 
 		fat[i] = 0x00;
 	}
 	//FAT
 	fwrite(fat, sizeof(uint16_t), 4096, arq); //salva o fat no arquivo de 4096 entradas de 16 bits
 	//Root dir
-	memset(root_dir, 0x00, sizeof(root_dir));				//1 cluster
+	memset(root_dir, 0x00, sizeof(root_dir));//1 cluster
 	fwrite(root_dir, sizeof(dir_entry_t), 32, arq); //salva o root_dir no arquivo (32 entradas de diretório)
 	//Data Cluesters
 	uint8_t data[CLUSTER_SIZE];
 	memset(data, 0x00, CLUSTER_SIZE); //cluster
 	i = 0;
 	for (i; i < 4086; i++)
-	{																			// 4086 clusters
+	{// 4086 clusters
 		fwrite(data, 1, CLUSTER_SIZE, arq); //salvar cluster no arquivo fat.part
 	}
 	fclose(arq);
@@ -46,14 +46,14 @@ int init()
 
 int load()
 {
-	FILE *arq = fopen("fat.part", "rb");
+	FILE *arq = fopen("fat.part", "rb");//abre a partição fat
 	if (arq == NULL)
 	{
-		printf("ERRO ao abrir arquivo fat\n");
+		printf("ERRO NA LEITURA DE DISCO FAT\n");
 		return 0;
 	}
-	fseek(arq, CLUSTER_SIZE, SEEK_SET);						 //Aponta para o FAT após o boot_block de 1024 bytes
-	fread(fat, sizeof(uint16_t), 4096, arq);			 // Ler o FAT com 4096 entradas de 16 bits
+	fseek(arq, CLUSTER_SIZE, SEEK_SET);//Aponta para o FAT após o boot_block de 1024 bytes
+	fread(fat, sizeof(uint16_t), 4096, arq);// Ler o FAT com 4096 entradas de 16 bits
 	fread(root_dir, sizeof(dir_entry_t), 32, arq); // Ler diretorio raiz com 32 entradas
 	fclose(arq);
 	return 1;
@@ -63,19 +63,18 @@ void ls(char *diretorio)
 {
 	if (diretorio == NULL)
 	{
-		printf("Caminho invalido\n");
+		printf("CAMINHO INVALIDO\n");
 		return;
 	}
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho
-	//char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe nome do diretorio atual
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 2);
+	index = procurarDIr(diretorio, dirAtual, 2);//Recebe o index do caminho, -1 se não for encontrado
 	if (index != -1)
 	{
 		data_cluster data = lerCluster(index);
 		printf("DIRETORIOS:\n");
 		for (int i = 0; i < 32; i++)
-		{
+		{//Percorre
 			if (data.dir[i].first_block != 0 && data.dir[i].attributes == 1)
 			{
 				printf("%s ", data.dir[i].filename);
@@ -96,12 +95,12 @@ void ls(char *diretorio)
 
 void mkdir(char *diretorio)
 {
-	if (diretorio == NULL || strcmp(diretorio, "") == 0)
+	if (diretorio == NULL || strcmp(diretorio, "") == 0 )
 	{
 		printf("Caminho invalido\n");
 		return;
 	}
-	if (diretorio == "/")
+	if (strcmp(diretorio, "/") == 0)
 	{
 		printf("NAO E POSSIVEL CRIAR O DIRETORIO RAIZ\n");
 		return;
@@ -245,15 +244,15 @@ void unlink(char *diretorio)
 {
 	if (diretorio == NULL || strcmp(diretorio, "") == 0)
 	{
-		printf("Caminho invalido\n");
+		printf("CAMINHO INVALIDO\n");
 		return;
 	}
-	if (diretorio == "/")
+	if (strcmp(diretorio, "/") == 0)
 	{
 		printf("NAO E POSSIVEL EXCLUIR O DIRETORIO RAIZ\n");
 		return;
 	}
-
+	
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho que devera ser apagado
 	int index;
 	index = procurarDIr(diretorio, dirAtual, 1);
@@ -314,7 +313,7 @@ void unlink(char *diretorio)
 						free(dirAtual);
 						return;
 					}
-					printf("ERRO DE attributes\n");
+					printf("ERRO DE ATTRIBUTES\n");
 				}
 			}
 		}
@@ -330,7 +329,7 @@ void write(char *parametros)
 {
 	if (parametros == NULL || strcmp(parametros, "") == 0)
 	{
-		printf("Caminho invalido\n");
+		printf("CAMINHO INVALIDO\n");
 		return;
 	}
 	char *diretorio = (char *)malloc(sizeof(char) * STRINGS_SIZE);
@@ -340,7 +339,7 @@ void write(char *parametros)
 
 	if (strcmp(string, "") == 0)
 	{
-		printf("string vazia\n");
+		printf("STRING VAZIA\n");
 		free(diretorio);
 		free(string);
 		free(dirAtual);
@@ -417,7 +416,7 @@ void append(char *parametros)
 {
 	if (parametros == NULL || strcmp(parametros, "") == 0)
 	{
-		printf("Caminho invalido\n");
+		printf("CAMINHO INVALIDO\n");
 		return;
 	}
 	char *diretorio = (char *)malloc(sizeof(char) * STRINGS_SIZE);
@@ -427,7 +426,7 @@ void append(char *parametros)
 
 	if (strcmp(string, "") == 0)
 	{
-		printf("string vazia\n");
+		printf("STRING VAZIA\n");
 		free(diretorio);
 		free(string);
 		free(dirAtual);
@@ -437,10 +436,9 @@ void append(char *parametros)
 	int index;
 	index = procurarDIr(diretorio, dirAtual, 3);
 
-	printf("string vazia\n");
 	if (index != -1)
 	{
-		printf("string vazia1 %d\n", index);
+
 		data_cluster data = lerCluster(index);
 		int i, tamArq;
 		for (i = 0; i < 32; i++)
@@ -451,7 +449,7 @@ void append(char *parametros)
 				break;
 			}
 		}
-		printf("string vazia2\n");
+		
 		if (i == 32)
 		{
 			printf("ARQUIVO NAO ENCONTRADO NO DIRETORIO\n");
@@ -460,26 +458,26 @@ void append(char *parametros)
 			free(dirAtual);
 			return;
 		}
-		printf("string vazia3\n");
+		
 		while (fat[index] != 0xffff)
 		{
 			index = fat[index];
 		}
 
-		printf("string vazia4\n");
+		
 		data = lerCluster(index);
 		tamArq = strlen(data.data);
 
 		if (tamArq + strlen(string) < 1024)
 		{
-			printf("string vazia5\n");
+			
 			// strcat(" ", string);
 			strcat(data.data, string);
 			salvarCluster(index, data);
 		}
 		else
 		{
-			printf("string vazia6\n");
+			
 			data_cluster *clusters;
 			int numClusters = 0, indexBloco;
 			strncat(data.data, string, 1024 - tamArq);
@@ -492,14 +490,14 @@ void append(char *parametros)
 					break;
 				}
 			}
-			printf("string vazia7\n");
+			
 			fat[index] = indexBloco;
 			fat[indexBloco] = 0xffff;
 			salvarCluster(indexBloco, clusters[0]);
 			if (numClusters > 1)
 			{
 				for (i = 1; i < numClusters; i++)
-				{ //grava o restante dos clusters
+				{ 
 					int indexBloco;
 					for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 					{
@@ -529,9 +527,9 @@ void append(char *parametros)
 
 void read(char *diretorio)
 {
-	if (diretorio == NULL || strcmp(diretorio, "") == 0)
+	if (diretorio == NULL || strcmp(diretorio, "") == 0 || strcmp(diretorio, "/") == 0)
 	{
-		printf("Caminho invalido\n");
+		printf("CAMINHO INVALIDO\n");
 		return;
 	}
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE);
@@ -566,35 +564,11 @@ void read(char *diretorio)
 			snprintf(arquivo, 1024, "%s", data.data);
 			printf("%s", arquivo);
 		}
-		printf("\n");
 	}
 	else
 	{
-		printf("ARQUIVO NAO ENCONTRADO\n");
+		printf("ARQUIVO NAO ENCONTRADO");
 	}
 	free(dirAtual);
+	printf("\n");
 }
-
-// char *getComando(char *linhaComando)
-// {
-// 	int tam = strlen(linhaComando);
-// 	char *comando = (char *)malloc(sizeof(char) * STRINGS_SIZE);
-// 	printf("%d\n", tam);
-// 	for (int i = 0; i < tam; i++)
-// 	{
-// 		if (linhaComando[i] != ' ')
-// 		{
-// 			comando[i] = linhaComando[i];
-// 		}
-// 		else
-// 		{
-// 			comando[i] = "\0";
-// 			tam = strlen(comando);
-// 			printf("%s\n", comando);
-// 			printf("%d\n", tam);
-// 			getchar();
-// 			return comando;
-// 		}
-// 	}
-// 	return comando;
-// }

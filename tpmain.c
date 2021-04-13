@@ -64,12 +64,12 @@ int main()
       }
       else
       {
-        printf("comando invalido\n");
+        printf("COMANDO INVALIDO\n");
       }
     }
     else
     {
-      printf("ERRO fat nao inicializada!\n");
+      printf("ERRO NA FAT, UTILIZE INIT OU LOAD\n");
     }
   } while (1);
 }
