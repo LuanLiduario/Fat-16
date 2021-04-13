@@ -111,33 +111,33 @@ int getNumDiretorios(char *caminho)
 	return numDiretorios - 1;
 }
 
-//clusters
+//clusters  
 data_cluster lerCluster(int index)
 {
-	FILE *arq = fopen("fat.part", "rb");
+	FILE *arq = fopen("fat.part", "rb");//abre o arquivo o arquivo fat.part
 	data_cluster cluster;
 	if (arq == NULL)
 	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	memset(&cluster, 0x00, CLUSTER_SIZE);
-	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);
-	fread(&cluster, CLUSTER_SIZE, 1, arq);
+	memset(&cluster, 0x00, CLUSTER_SIZE);//cria um cluster
+	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);//move o ponteiro para a posição index
+	fread(&cluster, CLUSTER_SIZE, 1, arq);//le o cluster 
 	fclose(arq);
 	return cluster;
 }
 
 void salvarCluster(int index, data_cluster cluster)
 {
-	FILE *arq = fopen("fat.part", "rb+");
+	FILE *arq = fopen("fat.part", "rb+");// abre o arquivo para atualização
 	if (arq == NULL)
 	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	fseek(arq, index * CLUSTER_SIZE, SEEK_SET); // Vai ao índice desejado
-	fwrite(&cluster, CLUSTER_SIZE, 1, arq);			// Lê o union e escreve no cluster
+	fseek(arq, index * CLUSTER_SIZE, SEEK_SET); // Aponta para o cluster do index
+	fwrite(&cluster, CLUSTER_SIZE, 1, arq);//salva cluster na memória			
 	fclose(arq);
 }
 
@@ -181,6 +181,7 @@ void getString(char *parametro, char *string, char *diretorio)
 void separaString(char *string1, char *string2, char *string3, char *separador)
 { //recebe uma string e separa a mesma em duas em relação à um caractere separador
 	int tam = strlen(string1);
+	char * aux;
 	strcpy(string2, strtok(string1, separador)); //string2 recebe um string que vai do inicio da string1 até a posição da primeira ocorrencia do caractere separador
 	if (tam == strlen(string2))
 	{ //se a nova string e a antiga tiverem o mesmo tamanho, significa que não é necessário separar a string recebida em duas. Por isso a string3 fica vazia
@@ -191,11 +192,23 @@ void separaString(char *string1, char *string2, char *string3, char *separador)
 		if (strcmp(separador, "/") == 0)
 		{ //caso o caractere separador for "/" (o caractere citado é passado chamadas da função separaString nas funções write e append), é necessário que a string3 possua o caractere no seu inicio. Strtok não coloca o caractere separador em nenhuma string da separação, por isso o caractere é colocado antes de se dividir
 			strcpy(string3, "/");
-			strcat(string3, strtok(NULL, "\n")); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+			aux = strtok(NULL, "\n");
+			if( aux == NULL){
+				strcpy(string3,"");
+				
+			}else{
+				strcat(string3, aux); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+			}
 		}
 		else
 		{
-			strcpy(string3, strtok(NULL, "\n")); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+			aux = strtok(NULL, "\n");
+			if(aux == NULL){
+				strcpy(string3,"");
+				
+			}else{
+				strcpy(string3, aux); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+			}
 		}
 	}
 }

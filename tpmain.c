@@ -15,15 +15,14 @@ int main()
     printf("$");
     gets(linhaComando);
     fflush(stdin);
-    // comando = getComando(linhaComando);
     separaString(linhaComando, comando, parametros, " ");
     if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || strcmp(comando, "exit") == 0)
     {
-      if (strcmp(comando, "init") == 0)
+      if (strcmp(comando, "init") == 0 && strcmp(parametros, "") == 0)
       {
         carregado = init();
       }
-      else if (strcmp(comando, "load") == 0)
+      else if (strcmp(comando, "load") == 0 && strcmp(parametros, "") == 0)
       {
         carregado = load();
       }
@@ -60,6 +59,7 @@ int main()
         printf("exit\n");
         free(linhaComando);
         free(comando);
+        free(parametros);
         return 0;
       }
       else

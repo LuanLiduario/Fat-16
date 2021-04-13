@@ -263,9 +263,9 @@ void unlink(char *diretorio)
 			data_cluster aux;
 			data_cluster data = lerCluster(index); // ler cluster que deve ser apagado
 			dir_entry_t dirVazio;
-			int j;
+			int j,i;
 			memset(&dirVazio, 0x00, 32);
-			for (int i = 0; i < 32; i++)
+			for (i = 0; i < 32; i++)
 			{
 				if (data.dir[i].first_block != 0 && strcmp(dirAtual, data.dir[i].filename) == 0)
 				{
@@ -315,6 +315,9 @@ void unlink(char *diretorio)
 					}
 					printf("ERRO DE ATTRIBUTES\n");
 				}
+			}
+			if(i == 32){
+				printf("DIRETORIO NAO ENCONTRADO\n");
 			}
 		}
 		else
