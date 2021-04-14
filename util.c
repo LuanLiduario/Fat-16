@@ -2,7 +2,7 @@
 
 //diretorios
 int procurarDIr(char *diretorio, char *dirAtual, int procura)
-{ // 1 - pai, 2 - atual, 3 - arquivo
+{ //
 	int index = 9, j = 0, k = 0;
 	int indexPai = index;
 
@@ -97,91 +97,56 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 }
 
 int getNumDiretorios(char *caminho)
-{
-	int numDiretorios = 0;
-	int i = 0;
+{												 //função usada para contar o número de diretórios
+	int numDiretorios = 0; // variável para contar o número de diretórios inicializada com 0
+	int i = 0;						 //variável para percorrer a string
 	do
-	{
+	{ //compara a string recebida na posição i, até que a string chegue ao fim. Sempre pelo menos a primeira posição é comparada
 		if (caminho[i] == '/')
-		{
+		{ //caso encontre um caractere '/', aumenta um no contador de diretórios
 			numDiretorios++;
 		}
 		i++;
 	} while (caminho[i] != '\0' && caminho[i] != '\n');
-	return numDiretorios - 1;
+	return numDiretorios - 1; // se retira um no contador porque o primeiro caractere '/' se refere ao diretório raiz
 }
 
-//clusters  
+//clusters
 data_cluster lerCluster(int index)
 {
-	FILE *arq = fopen("fat.part", "rb");//abre o arquivo o arquivo fat.part
+	FILE *arq = fopen("fat.part", "rb"); //abre o arquivo o arquivo fat.part
 	data_cluster cluster;
 	if (arq == NULL)
 	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	memset(&cluster, 0x00, CLUSTER_SIZE);//cria um cluster
-	fseek(arq, index * CLUSTER_SIZE, SEEK_SET);//move o ponteiro para a posição index
-	fread(&cluster, CLUSTER_SIZE, 1, arq);//le o cluster 
+	memset(&cluster, 0x00, CLUSTER_SIZE);				//cria um cluster
+	fseek(arq, index * CLUSTER_SIZE, SEEK_SET); //move o ponteiro para a posição index
+	fread(&cluster, CLUSTER_SIZE, 1, arq);			//le o cluster
 	fclose(arq);
 	return cluster;
 }
 
 void salvarCluster(int index, data_cluster cluster)
 {
-	FILE *arq = fopen("fat.part", "rb+");// abre o arquivo para atualização
+	FILE *arq = fopen("fat.part", "rb+"); // abre o arquivo para atualização
 	if (arq == NULL)
 	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
 	fseek(arq, index * CLUSTER_SIZE, SEEK_SET); // Aponta para o cluster do index
-	fwrite(&cluster, CLUSTER_SIZE, 1, arq);//salva cluster na memória			
+	fwrite(&cluster, CLUSTER_SIZE, 1, arq);			//salva cluster na memória
 	fclose(arq);
 }
 
 //strings
 
-void getString(char *parametro, char *string, char *diretorio)
-{
-	int j = 0, verifica = 0;
-	printf("%s\n", parametro);
-	for (int i = 1; i <= strlen(parametro); i++)
-	{
-		if (verifica == 0)
-		{
-			if (parametro[i] == '"')
-			{
-				string[j] = '\0';
-				j = 0;
-				verifica++;
-			}
-			else
-			{
-				string[j] == parametro[i];
-				j++;
-			}
-		}
-		else
-		{
-			if (parametro[i] == '\0' || parametro[i] == '\n')
-			{
-				diretorio[j] = '\0';
-				return;
-			}
-			else
-			{
-				diretorio[j] == parametro[i];
-				j++;
-			}
-		}
-	}
-}
 void separaString(char *string1, char *string2, char *string3, char *separador)
 { //recebe uma string e separa a mesma em duas em relação à um caractere separador
 	int tam = strlen(string1);
-	char * aux;
+	char *aux;
 	strcpy(string2, strtok(string1, separador)); //string2 recebe um string que vai do inicio da string1 até a posição da primeira ocorrencia do caractere separador
 	if (tam == strlen(string2))
 	{ //se a nova string e a antiga tiverem o mesmo tamanho, significa que não é necessário separar a string recebida em duas. Por isso a string3 fica vazia
@@ -190,45 +155,49 @@ void separaString(char *string1, char *string2, char *string3, char *separador)
 	else
 	{
 		if (strcmp(separador, "/") == 0)
-		{ //caso o caractere separador for "/" (o caractere citado é passado chamadas da função separaString nas funções write e append), é necessário que a string3 possua o caractere no seu inicio. Strtok não coloca o caractere separador em nenhuma string da separação, por isso o caractere é colocado antes de se dividir
+		{ //caso o caractere separador for "/", que é passado nas chamadas da função separaString nas funções write e append, é necessário que a string3 possua o caractere no seu inicio. Strtok não coloca o caractere separador em nenhuma string da separação, por isso o caractere é colocado antes de se dividir
 			strcpy(string3, "/");
-			aux = strtok(NULL, "\n");
-			if( aux == NULL){
-				strcpy(string3,"");
-				
-			}else{
-				strcat(string3, aux); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+			aux = strtok(NULL, "\n"); //string aux recebe a string retornada na chamada da função strtok, partindo do ponto onde a ultima chamada da função parou até que se chegue ao final da string. Foi necessário um auxiliar porque só é possível usar strtok, partindo do ponto onde parou a ultima chamada  do strtok, uma vez
+			if (aux == NULL)
+			{
+				strcpy(string3, ""); //caso aux seja nulo a string 3 recebe um string vazia
+			}
+			else
+			{
+				strcat(string3, aux); //adiciona aux no final da string3.
 			}
 		}
 		else
-		{
-			aux = strtok(NULL, "\n");
-			if(aux == NULL){
-				strcpy(string3,"");
-				
-			}else{
-				strcpy(string3, aux); //adiciona à string3 uma string que parte do ponto onde a função strtok parou desde a ultima chamada até \n
+		{														//caso o separador não seja '/'
+			aux = strtok(NULL, "\n"); //string aux recebe a string retornada na chamada da função strtok, partindo do ponto onde a ultima chamada da função parou até que se chegue ao final da string. Foi necessário um auxiliar porque só é possível usar strtok, partindo do ponto onde parou a ultima chamada  do strtok, uma vez
+			if (aux == NULL)
+			{
+				strcpy(string3, ""); //caso aux seja nulo a string 3 recebe um string vazia
+			}
+			else
+			{
+				strcpy(string3, aux); //caso aux não seja nulo string3 recebe aux
 			}
 		}
 	}
 }
 
 data_cluster *quebrarStringClusters(char *string, int *numClusters)
-{
+{ //a função quebra a string recebida em quantos clusters forem necessários
 	data_cluster *clusters;
 	int tamString, numClustersInteiros, numClustersFalta;
 	tamString = strlen(string);
-	numClustersInteiros = tamString / CLUSTER_SIZE;
-	numClustersFalta = tamString % CLUSTER_SIZE;
+	numClustersInteiros = tamString / CLUSTER_SIZE; // a variavel recebe o numero de clusters que serão ocupados por inteiro pela string
+	numClustersFalta = tamString % CLUSTER_SIZE;		// a variavel recebe o numero do quanto será necessário ocupar de um cluster para receber o restante da string
 
 	if (numClustersInteiros != 0)
-	{
-		int restante = 0, i = i;
+	{ //caso a string ocupe um ou mais clusters inteiros
+		int restante = 0, i = 0;
 		if (numClustersFalta > 0)
 		{
-			restante = 1;
+			restante = 1; //caso a string precise de mais um cluster para o restante da string, reestante recebe 1
 		}
-		clusters = (data_cluster *)malloc((numClustersInteiros + restante) * CLUSTER_SIZE);
+		clusters = (data_cluster *)malloc((numClustersInteiros + restante) * CLUSTER_SIZE); //aloca espaço para o vetor de clusters
 		for (i = 0; i < numClustersInteiros; i++)
 		{ //separa a string nos clusters
 			memset(&(clusters)[i], 0, CLUSTER_SIZE);
@@ -236,12 +205,12 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 			((clusters)[i].data)[CLUSTER_SIZE] = '\0';
 		}
 		if (restante == 1)
-		{
+		{ //caso seja mais um cluster para colocar o restante da string, isso é feito
 			memset(&(clusters)[i], 0, CLUSTER_SIZE);
 			memcpy(&(clusters)[i].data, &string[i * (CLUSTER_SIZE)], numClustersFalta);
 			(clusters)[i].data[numClustersFalta] = '\0';
 		}
-		(*numClusters) = numClustersInteiros + restante;
+		(*numClusters) = numClustersInteiros + restante; //número de clusters total recebe o número de clusters utilizados
 		return clusters;
 	}
 	else
