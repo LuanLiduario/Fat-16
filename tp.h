@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define CLUSTER_SIZE 1024 //numero de clusters
-#define STRINGS_SIZE 200		// TAMNHO LIMITE DAS STRINGS
+#define STRINGS_SIZE 200// TAMNHO LIMITE DAS STRINGS
 
 /*Informa¸c˜oes sobre o valor das entradas na FAT de 16 bits:
 0x0000 -> cluster livre

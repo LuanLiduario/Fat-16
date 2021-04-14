@@ -293,7 +293,7 @@ void unlink(char *diretorio)
 					if (data.dir[i].attributes == 0)
 					{//verifica se é um árquivo
 						int indexaux = data.dir[i].first_block;
-						indexaux = fat[indexaux];
+						//indexaux = fat[indexaux];
 						while (fat[indexaux] != 0xffff)
 						{
 							j = indexaux;
