@@ -1,11 +1,9 @@
 #include "tp.h"
-
 //diretorios
 int procurarDIr(char *diretorio, char *dirAtual, int procura)
 { //procura index do cluster do caminho recebido
 	int index = 9, j = 0, k = 0;
 	int indexPai = index;
-
 	if (strcmp(diretorio, "/") == 0)
 	{//diretório raiz
 		return index; //index
@@ -42,7 +40,6 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 					}
 				}
 			}
-
 			if (procura == 1)
 			{ //se for uma procura por um diretorio que será criado não deverá encontrar, ou se necessitar do diretório pai de algum diretório
 				if (k == 32 || numDiretorios == 0)
@@ -130,9 +127,13 @@ void salvarCluster(int index, data_cluster cluster)
 }
 
 //strings
-
 void separaString(char *string1, char *string2, char *string3, char *separador)
 { //recebe uma string e separa a mesma em duas em relação à um caractere separador
+	if(strcmp(string1, "") == 0{
+		strcpy(string2, "");
+		strcpy(string3, "");
+		return;
+	}
 	int tam = strlen(string1);
 	char *aux;
 	strcpy(string2, strtok(string1, separador)); //string2 recebe um string que vai do inicio da string1 até a posição da primeira ocorrencia do caractere separador
@@ -188,15 +189,15 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 		clusters = (data_cluster *)malloc((numClustersInteiros + restante) * CLUSTER_SIZE); //aloca espaço para o vetor de clusters
 		for (i = 0; i < numClustersInteiros; i++)
 		{ //separa a string nos clusters
-			memset(&(clusters)[i], 0, CLUSTER_SIZE);
-			memcpy(&(clusters)[i].data, &string[(CLUSTER_SIZE)*i], CLUSTER_SIZE);
-			((clusters)[i].data)[CLUSTER_SIZE] = '\0';
+			memset(&(clusters)[i], 0x00, CLUSTER_SIZE);//preenche o cluster com 0x00
+			memcpy(&(clusters)[i].data, &string[(CLUSTER_SIZE)*i], CLUSTER_SIZE);//copia a string para dentro do cluster
+			((clusters)[i].data)[CLUSTER_SIZE] = '\0';//finzaliza a string neste cluster
 		}
 		if (restante == 1)
 		{ //caso seja mais um cluster para colocar o restante da string, isso é feito
-			memset(&(clusters)[i], 0, CLUSTER_SIZE);
-			memcpy(&(clusters)[i].data, &string[i * (CLUSTER_SIZE)], numClustersFalta);
-			(clusters)[i].data[numClustersFalta] = '\0';
+			memset(&(clusters)[i], 0x00, CLUSTER_SIZE);//preenche o cluster com 0x00
+			memcpy(&(clusters)[i].data, &string[i * (CLUSTER_SIZE)], numClustersFalta);//copia a string para dentro do cluster
+			(clusters)[i].data[numClustersFalta] = '\0';//finzaliza a string neste cluster
 		}
 		(*numClusters) = numClustersInteiros + restante; //número de clusters total recebe o número de clusters utilizados
 		return clusters;
@@ -204,8 +205,8 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 	else
 	{//ocupa apenas um cluster
 		clusters = (data_cluster *)malloc(CLUSTER_SIZE);
-		memset(clusters, 0, CLUSTER_SIZE);
-		memcpy(&(clusters)[0], string, tamString);
+		memset(clusters, 0x00, CLUSTER_SIZE);//preenche o cluster com 0x00
+		memcpy(&(clusters)[0], string, tamString);//copia a string para dentro do cluster
 		(*numClusters) = 1;
 		return clusters;
 	}

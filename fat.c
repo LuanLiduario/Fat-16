@@ -30,6 +30,7 @@ int init()
 	//FAT
 	fwrite(fat, sizeof(uint16_t), 4096, arq); //salva o fat no arquivo de 4096 entradas de 16 bits
 	//Root dir
+	dir_entry_t root_dir[32];
 	memset(root_dir, 0x00, sizeof(root_dir));//1 cluster
 	fwrite(root_dir, sizeof(dir_entry_t), 32, arq); //salva o root_dir no arquivo (32 entradas de diretório)
 	//Data Cluesters
@@ -54,7 +55,7 @@ int load()
 	}
 	fseek(arq, CLUSTER_SIZE, SEEK_SET);//Aponta para o FAT após o boot_block de 1024 bytes
 	fread(fat, sizeof(uint16_t), 4096, arq);// Ler o FAT com 4096 entradas de 16 bits
-	fread(root_dir, sizeof(dir_entry_t), 32, arq); // Ler diretorio raiz com 32 entradas
+	//fread(root_dir, sizeof(dir_entry_t), 32, arq); // Ler diretorio raiz com 32 entradas
 	fclose(arq);
 	return 1;
 }
@@ -115,7 +116,7 @@ void mkdir(char *diretorio)
 			data_cluster data = lerCluster(index);
 			data_cluster novoDiretorio;//cluster que recebrá as entradas do novo diretório 
 			int indexBloco, j;
-			memset(novoDiretorio.dir, 0x0000, 32 * sizeof(dir_entry_t));//preeche o cluster  com 32 entradas vazias
+			memset(novoDiretorio.dir, 0x00, 32 * sizeof(dir_entry_t));//preeche o cluster  com 32 entradas vazias
 			for (j = 0; j < 32; j++)
 			{//percorre as 32 entradas no diretorio pai
 				if (strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 1)
@@ -145,7 +146,7 @@ void mkdir(char *diretorio)
 			data.dir[j].attributes = 1; //1 - diretorio
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{ //percorre a fat
-				if (fat[indexBloco] == 0x0000)
+				if (fat[indexBloco] == 0x00)
 				{ //procura uma posição vazia
 					data.dir[j].first_block = indexBloco;
 					fat[indexBloco] = 0xffff;
@@ -182,7 +183,7 @@ void create(char *diretorio)
 			data_cluster data = lerCluster(index);
 			data_cluster novoArquivo;//cluster que receberá o espaço do novo arquivo
 			int indexBloco, j;
-			memset(novoArquivo.data, 0x0000,CLUSTER_SIZE);//preecnhe o cluster do novo arquivo
+			memset(novoArquivo.data, 0x00,CLUSTER_SIZE);//preecnhe o cluster do novo arquivo
 			for (j = 0; j < 32; j++)
 			{//percorre o diretório onde o arquivo será salvo
 				if (strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 0)
@@ -215,7 +216,7 @@ void create(char *diretorio)
 			data.dir[j].attributes = 0; //0 - arquivo
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{ //percorre a fat
-				if (fat[indexBloco] == 0x0000)
+				if (fat[indexBloco] == 0x00)
 				{ //procura uma posição vazia na fat
 					data.dir[j].first_block = indexBloco;
 					fat[indexBloco] = 0xffff;
@@ -275,7 +276,7 @@ void unlink(char *diretorio)
 						}
 						if (j == 32)
 						{//se percorrer todo direório significa que está vazio
-							fat[data.dir[i].first_block] =  0x0000;//vazio
+							fat[data.dir[i].first_block] =  0x00;//vazio
 							data.dir[i] = dirVazio;//recebe diretório vazio
 							salvarCluster(index, data);//salva o diretório pai
 							atualizarFat();//atualiza a fat
@@ -301,8 +302,8 @@ void unlink(char *diretorio)
 							fat[j] = 0;
 						}
 						//data.dir[i].first_block
-						fat[data.dir[i].first_block] = 0x0000;//limpa o ultimo da fat
-						fat[indexaux] = 0x0000;//vazio
+						fat[data.dir[i].first_block] = 0x00;//limpa o ultimo da fat
+						fat[indexaux] = 0x00;//vazio
 						data.dir[i] = dirVazio;//recebe o diretorio vazio
 						salvarCluster(index, data);//salva o cluster do diretorio onde se encontra o arquivo
 						atualizarFat();//atualiza a fat
@@ -375,9 +376,9 @@ void write(char *parametros)
 		{//procura espaço vazio
 			indexBloco = auxindex;
 			auxindex = fat[auxindex];
-			fat[indexBloco] = 0x0000;
+			fat[indexBloco] = 0x00;
 		}
-		fat[auxindex] = 0x0000;
+		fat[auxindex] = 0x00;
 		fat[index] = 0xffff;
 		salvarCluster(index, clusters[0]);//salva o primeiro cluster
 		if (numClusters > 1)
@@ -386,7 +387,7 @@ void write(char *parametros)
 			{
 				for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 				{//procura espaço vazio
-					if (fat[indexBloco] == 0x0000)
+					if (fat[indexBloco] == 0x00)
 					{
 						break;
 					}
@@ -471,7 +472,7 @@ void append(char *parametros)
 			clusters = quebrarStringClusters(&string[1024 - tamArq], &numClusters);//preenche a lista com os clusters necessarios
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{//percorre a fat
-				if (fat[indexBloco] == 0x0000)
+				if (fat[indexBloco] == 0x00)
 				{//procura espaço vazio na fat
 					break;
 				}
@@ -486,7 +487,7 @@ void append(char *parametros)
 					int indexBloco;
 					for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 					{//percorre a fat
-						if (fat[indexBloco] == 0x0000)
+						if (fat[indexBloco] == 0x00)
 						{//para o loop se encontrar espeço vazio
 							break;
 						}

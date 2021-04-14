@@ -43,8 +43,6 @@ typedef union
 
 //typedef union data_cluster data_cluster;
 
-dir_entry_t root_dir[32]; // diretorio raiz
-
 //assinatura das funções
 //funcoes fat
 int init();
@@ -60,7 +58,7 @@ void read(char *diretorio);
 void separaString(char *string1, char *string2, char *string3, char *separador);
 data_cluster *quebrarStringClusters(char *string, int *numClusters);
 //funcoes diretorio
-int procurarDIr(char *diretorio, char *aux, int procura);
+int procurarDIr(char *diretorio, char *dirAtual, int procura);
 int getNumDiretorios(char *caminho);
 //funcoes clusters
 data_cluster lerCluster(int index);
