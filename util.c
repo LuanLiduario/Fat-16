@@ -193,7 +193,7 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 	if (numClustersInteiros != 0)
 	{ //caso a string ocupe um ou mais clusters inteiros
 		int restante = 0, i = 0;
-		if (numClustersFalta > 0)
+		if (numClustersFalta >= 0)
 		{
 			restante = 1; //caso a string precise de mais um cluster para o restante da string, reestante recebe 1
 		}

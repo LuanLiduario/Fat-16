@@ -463,17 +463,11 @@ void append(char *parametros)
 		}
 		else
 		{
-			printf("%d\n",tamArq );
-			printf("NAO CABE NO CLUSTER\n");
 			data_cluster *clusters;//cria uma lista de clusters
-			printf("NAO CABE NO CLUSTER\n");
 			int numClusters = 0, indexBloco;
 			int t = 1023 - tamArq;
-			printf("%d\n",t );
 			strncat(data.data, string, t);
-			printf("NAO CABE NO CLUSTER alvou o primeiro\n");
 			salvarCluster(index, data);//salva o que da no cluster atual
-			printf("NAO CABE NO CLUSTER\n");
 			clusters = quebrarStringClusters(&string[1024 - tamArq], &numClusters);//preenche a lista com os clusters necessarios
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{
@@ -484,8 +478,6 @@ void append(char *parametros)
 			}
 			fat[index] = indexBloco;
 			fat[indexBloco] = 0xffff;
-			printf("%d\n",indexBloco );
-			//exit(1);
 			salvarCluster(indexBloco, clusters[0]);//salva na fat o primeiro cluster
 			if (numClusters > 1)
 			{
