@@ -66,31 +66,31 @@ void ls(char *diretorio)
 		printf("CAMINHO INVALIDO\n");
 		return;
 	}
-	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho
+	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Receberá o nome do diretorio no caminho
 	int index;
 	index = procurarDIr(diretorio, dirAtual, 2);//Recebe o index do caminho, -1 se não for encontrado
 	if (index != -1)
-	{
+	{//verifica se encontrou o arquivo
 		data_cluster data = lerCluster(index);
 		printf("DIRETORIOS:\n");
 		for (int i = 0; i < 32; i++)
-		{//Percorre
+		{//Percorre as 32 entradas e verifica se é um diretorio
 			if (data.dir[i].first_block != 0 && data.dir[i].attributes == 1)
-			{
+			{//se for um diretório printa o filename
 				printf("%s ", data.dir[i].filename);
 			}
 		}
 		printf("\nARQUIVOS:\n");
 		for (int i = 0; i < 32; i++)
-		{
+		{//Percorre as 32 entradas e verifica se é um arquivo
 			if (data.dir[i].first_block != 0 && data.dir[i].attributes == 0)
-			{
+			{//se for um arquivo printa o filename
 				printf("%s ", data.dir[i].filename);
 			}
 		}
 		printf("\n");
 	}
-	free(dirAtual);
+	free(dirAtual);//desaloca 
 }
 
 void mkdir(char *diretorio)
@@ -105,44 +105,41 @@ void mkdir(char *diretorio)
 		printf("NAO E POSSIVEL CRIAR O DIRETORIO RAIZ\n");
 		return;
 	}
-	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho
-	//char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe nome do diretorio atual
-
+	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebera o nome do diretorio no caminho
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 1);
-	// if(getNumDiretorios(diretorio)==0){
-	// 	index == 9;
-	// }
+	index = procurarDIr(diretorio, dirAtual, 1);//procura o index do cluster do diretorio pai do diretório a ser criado 
 	if (index != -1)
-	{
+	{//verifica se encontrou um diretório pai
 		if (strcmp(dirAtual, "") != 0 && strcmp(dirAtual, "/") != 0 && strcmp(dirAtual, " ") != 0)
 		{ //caso o parametro do comando não seja vazio ou somente "/" (porque nesse caso o usuário estaria tentando criar um diretorio sem nome), o processo prossegue
 			data_cluster data = lerCluster(index);
-			data_cluster novoDiretorio;
+			data_cluster novoDiretorio;//cluster que recebrá as entradas do novo diretório 
 			int indexBloco, j;
-
-			memset(novoDiretorio.dir, 0x0000, 32 * sizeof(dir_entry_t));
-
+			memset(novoDiretorio.dir, 0x0000, 32 * sizeof(dir_entry_t));//preeche o cluster  com 32 entradas vazias
 			for (j = 0; j < 32; j++)
-			{
+			{//percorre as 32 entradas no diretorio pai
 				if (strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 1)
-				{ //verifica se ja existe diretorio com este nome
+				{ //garante se ja existe diretorio com este nome
 					printf("DIRETORIO JA EXISTE\n");
 					free(dirAtual);
 					return;
 				}
 				if (data.dir[j].first_block == 0)
-				{
+				{//se a posição estiver vazia para o loop
 					break;
 				}
 			}
-
+			if(j == 32){//se j for 32 todas as entradas do diretório estão preenchidas
+				printf("DIRETORIO CHEIO\n");
+				free(dirAtual);
+				return;
+			}
 			if (strlen(dirAtual) < 18)
-			{
-				strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));
+			{//se o nome do direório for maior que o limite 18 caracters é tratado no else
+				strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));//se for de tamanho correto, é salvo o nome
 			}
 			else
-			{
+			{//limitamos a copia para 17 caracters, o 18 sendo o \0
 				strncpy(data.dir[j].filename, dirAtual, 17);
 			}
 			data.dir[j].attributes = 1; //1 - diretorio
@@ -152,15 +149,13 @@ void mkdir(char *diretorio)
 				{ //procura uma posição vazia
 					data.dir[j].first_block = indexBloco;
 					fat[indexBloco] = 0xffff;
-					atualizarFat();														//atualiza a fat no arquivo
-					salvarCluster(index, data);								//atualiza o cluster
+					atualizarFat();	//atualiza a fat no arquivo
+					salvarCluster(index, data);	//atualiza o cluster do direório pai
 					salvarCluster(indexBloco, novoDiretorio); // salva o novo diretorio no arquivo
 					free(dirAtual);
 					return;
 				}
-			}
-
-			printf("DIRETORIO CHEIO\n");
+			}	
 		}
 		else
 		{
@@ -177,19 +172,19 @@ void create(char *diretorio)
 		printf("Caminho invalido\n");
 		return;
 	}
-	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho
+	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Receberá o nome do arquivo no caminho
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 1);
+	index = procurarDIr(diretorio, dirAtual, 1);//procura o index do cluster do diretório onde o arquivo será salvo 
 	if (index != -1)
-	{
+	{//verifica se encontrou o diretório 
 		if (strcmp(dirAtual, "") != 0 && strcmp(dirAtual, "/") != 0 && strcmp(dirAtual, " ") != 0)
 		{ //caso o parametro do comando não seja vazio ou somente "/" (porque nesse caso o usuário estaria tentando criar um arquivo sem nome), o processo prossegue
 			data_cluster data = lerCluster(index);
-			data_cluster novoDiretorio;
+			data_cluster novoArquivo;//cluster que receberá o espaço do novo arquivo
 			int indexBloco, j;
-			memset(novoDiretorio.dir, 0x0000, 32 * sizeof(dir_entry_t));
+			memset(novoArquivo.data, 0x0000,CLUSTER_SIZE);//preecnhe o cluster do novo arquivo
 			for (j = 0; j < 32; j++)
-			{
+			{//percorre o diretório onde o arquivo será salvo
 				if (strcmp(data.dir[j].filename, dirAtual) == 0 && data.dir[j].attributes == 0)
 				{ //verifica se ja existe arquivo com este nome
 					printf("ARQUIVO JA EXISTE\n");
@@ -197,36 +192,36 @@ void create(char *diretorio)
 					return;
 				}
 				if (data.dir[j].first_block == 0)
-				{
+				{//se encontrar um espço vazio para o loop
 					break;
 				}
 			}
 
 			if (j == 32)
-			{
+			{//se perorrer todas as entradas significa que o diretório está cheio
 				printf("DIRETORIO CHEIO\n");
 				free(dirAtual);
 				return;
 			}
 
 			if (strlen(dirAtual) < 18)
-			{
-				strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));
+			{//se o nome do arquivo for maior que o limite 18 caracters é tratado no else
+				strncpy(data.dir[j].filename, dirAtual, strlen(dirAtual));//se for de tamanho correto, é salvo o nome
 			}
 			else
-			{
+			{//limitamos a copia para 17 caracters, o 18 sendo o \0
 				strncpy(data.dir[j].filename, dirAtual, 17);
 			}
 			data.dir[j].attributes = 0; //0 - arquivo
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{ //percorre a fat
 				if (fat[indexBloco] == 0x0000)
-				{ //procura uma posição vazia
+				{ //procura uma posição vazia na fat
 					data.dir[j].first_block = indexBloco;
 					fat[indexBloco] = 0xffff;
-					atualizarFat();														//atualiza a fat no arquivo
-					salvarCluster(index, data);								//atualiza o cluster
-					salvarCluster(indexBloco, novoDiretorio); // salva o novo diretorio no arquivo
+					atualizarFat();//atualiza a fat no arquivo
+					salvarCluster(index, data);//atualiza o cluster
+					salvarCluster(indexBloco, novoArquivo); // salva o novo diretorio no arquivo
 					free(dirAtual);
 					return;
 				}
@@ -252,63 +247,62 @@ void unlink(char *diretorio)
 		printf("NAO E POSSIVEL EXCLUIR O DIRETORIO RAIZ\n");
 		return;
 	}
-	
-	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Recebe o nome do diretorio no caminho que devera ser apagado
+	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE); // Receberá o nome do diretorio ou arquivo no caminho que devera ser apagado
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 1);
+	index = procurarDIr(diretorio, dirAtual, 1);//procura o index do diretorio pai do diretório que será salvo, e no caso de arquivo será o diretório onde o arquivo se encontra
 	if (index != -1)
 	{
 		if (strcmp(dirAtual, "") != 0 && strcmp(dirAtual, "/") != 0 && strcmp(dirAtual, " ") != 0)
 		{ //caso o parametro do comando não seja vazio ou somente "/" (porque nesse caso o usuário estaria tentando apagar um diretorio ou arquivo sem nome), o processo prossegue
 			data_cluster aux;
-			data_cluster data = lerCluster(index); // ler cluster que deve ser apagado
-			dir_entry_t dirVazio;
+			data_cluster data = lerCluster(index); // ler cluster pai do que deve ser apagado
+			dir_entry_t dirVazio;//diretorio vazio
 			int j,i;
-			memset(&dirVazio, 0x00, 32);
+			memset(&dirVazio, 0x00, 32);//preecnhe o diretorio
 			for (i = 0; i < 32; i++)
-			{
+			{//percorre todas as entradas do diretorio do index
 				if (data.dir[i].first_block != 0 && strcmp(dirAtual, data.dir[i].filename) == 0)
-				{
+				{//se econtrar um espaço que não esteja vazio e seja o arquivo ou diretorio que será apagado 
 					if (data.dir[i].attributes == 1)
-					{
-						aux = lerCluster(data.dir[i].first_block);
+					{//verifica se é um diretório
+						aux = lerCluster(data.dir[i].first_block);//ler o cluster do diretório que será excluido 
 						for (j = 0; j < 32; j++)
-						{
+						{//percorre o diretorio que sera excluido
 							if (aux.dir[j].first_block != 0)
-							{
+							{//se ele tiver uma posição preenchida para o loop 
 								break;
 							}
 						}
 						if (j == 32)
-						{
-							fat[data.dir[i].first_block] = 0;
-							data.dir[i] = dirVazio;
-							salvarCluster(index, data);
-							atualizarFat();
+						{//se percorrer todo direório significa que está vazio
+							fat[data.dir[i].first_block] = 0;//vazio
+							data.dir[i] = dirVazio;//recebe diretório vazio
+							salvarCluster(index, data);//salva o diretório pai
+							atualizarFat();//atualiza a fat
 							printf("DIRETORIO APAGADO\n");
 							free(dirAtual);
 							return;
 						}
 						else
-						{
+						{//se o j for menor que 32 significa que exite algum arquivo ou diretorio dentro do diretorio que deseja apagar
 							printf("ESVAZIE O DIRETORIO ANTES DE FAZER UNLINK\n");
 							free(dirAtual);
 							return;
 						}
 					}
 					if (data.dir[i].attributes == 0)
-					{
+					{//verifica se é um árquivo
 						int indexaux;
-						j = data.dir[i].first_block;
+						j = data.dir[i].first_block;//primeiro bloco preenchido pelo arquivo
 						while (fat[j] != 0xffff)
-						{
+						{//limpa a fat
 							index = j;
-							j = fat[indexaux];
+							j = fat[indexaux];//index do proximo cluster preenchido por este arquivo
 							fat[indexaux] = 0x0000;
 						}
-						data.dir[i] = dirVazio;
-						salvarCluster(index, data);
-						atualizarFat();
+						data.dir[i] = dirVazio;//recebe o diretorio vazio
+						salvarCluster(index, data);//salva o cluster do diretorio onde se encontra o arquivo
+						atualizarFat();//atualiza a fat
 						printf("ARQUIVO APAGADO\n");
 						free(dirAtual);
 						return;
@@ -348,10 +342,8 @@ void write(char *parametros)
 		free(dirAtual);
 		return;
 	}
-
 	int index;
 	index = procurarDIr(diretorio, dirAtual, 3);
-
 	if (index != -1)
 	{
 		data_cluster data = lerCluster(index);
@@ -387,12 +379,15 @@ void write(char *parametros)
 		salvarCluster(index, clusters[0]);
 		if (numClusters > 1)
 		{
+			printf("maius que um\n");
 			for (i = 1; i < numClusters; i++)
 			{
+				printf("maius que um\n");
 				indexBloco;
 				for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 				{
-					if (fat[indexBloco] != 0x0000)
+					printf("maius que um\n");
+					if (fat[indexBloco] == 0x0000)
 					{
 						break;
 					}
@@ -422,89 +417,87 @@ void append(char *parametros)
 		printf("CAMINHO INVALIDO\n");
 		return;
 	}
+	//strings que receberão os pedaços do parametro
 	char *diretorio = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	char *string = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE);
-	separaString(parametros, string, diretorio, "/");
-
+	separaString(parametros, string, diretorio, "/");//separa a string que será salva do diretório 
 	if (strcmp(string, "") == 0)
-	{
+	{//veirifca a string
 		printf("STRING VAZIA\n");
 		free(diretorio);
 		free(string);
 		free(dirAtual);
 		return;
 	}
-
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 3);
-
+	index = procurarDIr(diretorio, dirAtual, 3);//procura o cluster do diretório onde o arquivo está, o qual será salvo a string 
 	if (index != -1)
-	{
-
-		data_cluster data = lerCluster(index);
+	{//verifica se encontrou o cluster do diretorio onde arquivo
+		data_cluster data = lerCluster(index);//ler o cluster do diretório onde o arquivo está
 		int i, tamArq;
 		for (i = 0; i < 32; i++)
-		{
+		{//percorre o cluster
 			if (strcmp(data.dir[i].filename, dirAtual) == 0 && data.dir[i].first_block != 0 && data.dir[i].attributes == 0)
-			{
+			{//se achar o arquivo para o loop
 				index = data.dir[i].first_block;
 				break;
 			}
 		}
-		
 		if (i == 32)
-		{
+		{//não achou o arquivo
 			printf("ARQUIVO NAO ENCONTRADO NO DIRETORIO\n");
 			free(diretorio);
 			free(string);
 			free(dirAtual);
 			return;
 		}
-		
 		while (fat[index] != 0xffff)
-		{
+		{//procura o ultimo cluster que pertence ao arquivo
 			index = fat[index];
 		}
-
-		
-		data = lerCluster(index);
-		tamArq = strlen(data.data);
-
-		if (tamArq + strlen(string) < 1024)
-		{
-			
-			// strcat(" ", string);
-			strcat(data.data, string);
+		data = lerCluster(index);//ler cluster 
+		tamArq = strlen(data.data);//pega o tamanho que já está ocupado
+		if (1024 > tamArq + strlen(string))
+		{//se a streing cabe no cluster
+			strcat(data.data, string);//coloca a string junto o que já tem
 			salvarCluster(index, data);
 		}
 		else
 		{
-			
-			data_cluster *clusters;
+			printf("%d\n",tamArq );
+			printf("NAO CABE NO CLUSTER\n");
+			data_cluster *clusters;//cria uma lista de clusters
+			printf("NAO CABE NO CLUSTER\n");
 			int numClusters = 0, indexBloco;
-			strncat(data.data, string, 1024 - tamArq);
-			salvarCluster(index, data);
-			clusters = quebrarStringClusters(string, &numClusters);
+			int t = 1023 - tamArq;
+			printf("%d\n",t );
+			strncat(data.data, string, t);
+			printf("NAO CABE NO CLUSTER alvou o primeiro\n");
+			salvarCluster(index, data);//salva o que da no cluster atual
+			printf("NAO CABE NO CLUSTER\n");
+			clusters = quebrarStringClusters(&string[1024 - tamArq], &numClusters);//preenche a lista com os clusters necessarios
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 			{
-				if (fat[indexBloco] != 0x0000)
-				{
+				if (fat[indexBloco] == 0x0000)
+				{//procura espaço vazio na fat
 					break;
 				}
 			}
-			
 			fat[index] = indexBloco;
 			fat[indexBloco] = 0xffff;
-			salvarCluster(indexBloco, clusters[0]);
+			printf("%d\n",indexBloco );
+			//exit(1);
+			salvarCluster(indexBloco, clusters[0]);//salva na fat o primeiro cluster
 			if (numClusters > 1)
 			{
+				printf("MAIS Q UM?\n");
 				for (i = 1; i < numClusters; i++)
-				{ 
+				{ //salva os clusters restantes
 					int indexBloco;
 					for (indexBloco = 10; indexBloco < 4096; indexBloco++)
 					{
-						if (fat[indexBloco] != 0x0000)
+						if (fat[indexBloco] == 0x0000)
 						{
 							break;
 						}
@@ -515,14 +508,13 @@ void append(char *parametros)
 					salvarCluster(index, clusters[i]);
 				}
 			}
-			atualizarFat();
+			atualizarFat();//atualiza a fat
 		}
 	}
 	else
 	{
 		printf("ARQUIVO NAO ENCONTRADO\n");
 	}
-
 	free(diretorio);
 	free(string);
 	free(dirAtual);
