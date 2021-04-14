@@ -221,7 +221,7 @@ void create(char *diretorio)
 					fat[indexBloco] = 0xffff;
 					atualizarFat();//atualiza a fat no arquivo
 					salvarCluster(index, data);//atualiza o cluster
-					salvarCluster(indexBloco, novoArquivo); // salva o novo diretorio no arquivo
+					salvarCluster(indexBloco, novoArquivo); // salva no arquivo
 					free(dirAtual);
 					return;
 				}
@@ -275,7 +275,7 @@ void unlink(char *diretorio)
 						}
 						if (j == 32)
 						{//se percorrer todo direório significa que está vazio
-							fat[data.dir[i].first_block] = 0;//vazio
+							fat[data.dir[i].first_block] =  0x0000;//vazio
 							data.dir[i] = dirVazio;//recebe diretório vazio
 							salvarCluster(index, data);//salva o diretório pai
 							atualizarFat();//atualiza a fat
@@ -292,14 +292,17 @@ void unlink(char *diretorio)
 					}
 					if (data.dir[i].attributes == 0)
 					{//verifica se é um árquivo
-						int indexaux;
-						j = data.dir[i].first_block;//primeiro bloco preenchido pelo arquivo
-						while (fat[j] != 0xffff)
-						{//limpa a fat
-							indexaux = j;
-							j = fat[indexaux];//index do proximo cluster preenchido por este arquivo
-							fat[indexaux] = 0x0000;
+						int indexaux = data.dir[i].first_block;
+						indexaux = fat[indexaux];
+						while (fat[indexaux] != 0xffff)
+						{
+							j = indexaux;
+							indexaux = fat[indexaux];
+							fat[j] = 0;
 						}
+						//data.dir[i].first_block
+						fat[data.dir[i].first_block] = 0x0000;//limpa o ultimo da fat
+						fat[indexaux] = 0x0000;//vazio
 						data.dir[i] = dirVazio;//recebe o diretorio vazio
 						salvarCluster(index, data);//salva o cluster do diretorio onde se encontra o arquivo
 						atualizarFat();//atualiza a fat
@@ -329,11 +332,11 @@ void write(char *parametros)
 		printf("CAMINHO INVALIDO\n");
 		return;
 	}
+	//strings que iram receber o diretorio e string e o nome do arquivo
 	char *diretorio = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	char *string = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	separaString(parametros, string, diretorio, "/");
-
 	if (strcmp(string, "") == 0)
 	{
 		printf("STRING VAZIA\n");
@@ -343,21 +346,21 @@ void write(char *parametros)
 		return;
 	}
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 3);
+	index = procurarDIr(diretorio, dirAtual, 3);//procura o cluster do diretorio onde o arquivo 
 	if (index != -1)
 	{
 		data_cluster data = lerCluster(index);
 		int i;
 		for (i = 0; i < 32; i++)
-		{
+		{//verifica as 32 entradas diretorio 
 			if (strcmp(data.dir[i].filename, dirAtual) == 0 && data.dir[i].first_block != 0 && data.dir[i].attributes == 0)
-			{
+			{//para o loop se achar o arquivo
 				index = data.dir[i].first_block;
 				break;
 			}
 		}
 		if (i == 32)
-		{
+		{//se i for 32 o arquivo não foi econtrado
 			printf("ARQUIVO NAO ENCONTRADO NO DIRETORIO\n");
 			free(diretorio);
 			free(string);
@@ -366,27 +369,23 @@ void write(char *parametros)
 		}
 		int numClusters;
 		data_cluster *clusters;
-		clusters = quebrarStringClusters(string, &numClusters);
-		int index_final = index, indexBloco;
-		while (fat[index_final] != 0xffff)
-		{
-			indexBloco = index_final;
-			index_final = fat[index_final];
+		clusters = quebrarStringClusters(string, &numClusters);// separa a string em clusters
+		int auxindex = index, indexBloco;
+		while (fat[auxindex] != 0xffff)
+		{//procura espaço vazio
+			indexBloco = auxindex;
+			auxindex = fat[auxindex];
 			fat[indexBloco] = 0x0000;
 		}
-		fat[index_final] = 0x0000;
+		fat[auxindex] = 0x0000;
 		fat[index] = 0xffff;
-		salvarCluster(index, clusters[0]);
+		salvarCluster(index, clusters[0]);//salva o primeiro cluster
 		if (numClusters > 1)
-		{
-			printf("maius que um\n");
+		{//se tiver mais algum cluster salva eles
 			for (i = 1; i < numClusters; i++)
 			{
-				printf("maius que um\n");
-				indexBloco;
 				for (indexBloco = 10; indexBloco < 4096; indexBloco++)
-				{
-					printf("maius que um\n");
+				{//procura espaço vazio
 					if (fat[indexBloco] == 0x0000)
 					{
 						break;
@@ -394,17 +393,16 @@ void write(char *parametros)
 				}
 				fat[index] = indexBloco;
 				index = indexBloco;
-				fat[index] = 0xffff;
-				salvarCluster(index, clusters[i]);
+				fat[index] = 0xffff;// salva na fat
+				salvarCluster(index, clusters[i]);//salva o cluster i no arquivo
 			}
 		}
-		atualizarFat();
+		atualizarFat();//atualiza a fat
 	}
 	else
 	{
 		printf("ARQUIVO NAO ENCONTRADO\n");
 	}
-
 	free(diretorio);
 	free(string);
 	free(dirAtual);
@@ -491,7 +489,6 @@ void append(char *parametros)
 			salvarCluster(indexBloco, clusters[0]);//salva na fat o primeiro cluster
 			if (numClusters > 1)
 			{
-				printf("MAIS Q UM?\n");
 				for (i = 1; i < numClusters; i++)
 				{ //salva os clusters restantes
 					int indexBloco;
@@ -529,31 +526,31 @@ void read(char *diretorio)
 	}
 	char *dirAtual = (char *)malloc(sizeof(char) * STRINGS_SIZE);
 	int index;
-	index = procurarDIr(diretorio, dirAtual, 3);
+	index = procurarDIr(diretorio, dirAtual, 3);//procura o arquivo
 	if (index != -1)
-	{
-		data_cluster data = lerCluster(index);
+	{//verifica se arquivo foi encontrado
+		data_cluster data = lerCluster(index);//ler o cluster o diretorio
 		int i, tamArq;
 		for (i = 0; i < 32; i++)
-		{
+		{//verifica as entradas 
 			if (strcmp(data.dir[i].filename, dirAtual) == 0 && data.dir[i].first_block != 0 && data.dir[i].attributes == 0)
-			{
+			{//para se encontrar o arquivo
 				index = data.dir[i].first_block;
 				break;
 			}
 		}
 		if (i == 32)
-		{
+		{//caso tenha ocorrido algum erro
 			printf("ARQUIVO NAO ENCONTRADO NO DIRETORIO\n");
 			free(dirAtual);
 			return;
 		}
 		data = lerCluster(index);
-		uint8_t arquivo[1024];
-		snprintf(arquivo, 1024, "%s", data.data);
+		uint8_t arquivo[1024];//tamanho do arquivo
+		snprintf(arquivo, 1024, "%s", data.data);//printa o primeiro cluster do arquivo
 		printf("%s", arquivo);
 		while (fat[index] != 0xffff)
-		{
+		{//procura e printa os outros clusters
 			index = fat[index];
 			data = lerCluster(index);
 			snprintf(arquivo, 1024, "%s", data.data);
