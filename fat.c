@@ -296,7 +296,7 @@ void unlink(char *diretorio)
 						j = data.dir[i].first_block;//primeiro bloco preenchido pelo arquivo
 						while (fat[j] != 0xffff)
 						{//limpa a fat
-							index = j;
+							indexaux = j;
 							j = fat[indexaux];//index do proximo cluster preenchido por este arquivo
 							fat[indexaux] = 0x0000;
 						}
