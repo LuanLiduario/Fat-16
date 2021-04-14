@@ -2,51 +2,41 @@
 
 //diretorios
 int procurarDIr(char *diretorio, char *dirAtual, int procura)
-{ //
+{ //procura index do cluster do caminho recebido
 	int index = 9, j = 0, k = 0;
 	int indexPai = index;
 
 	if (strcmp(diretorio, "/") == 0)
-	{
+	{//diretório raiz
 		return index; //index
 	}
 
 	if (diretorio[0] != '/')
-	{
+	{//caminho invalido
 		printf("PARAMETRO INVALIDO\n");
 		return -1;
 	}
-	int numDiretorios = getNumDiretorios(diretorio);
-	data_cluster data = lerCluster(index);
-
+	int numDiretorios = getNumDiretorios(diretorio);//numero de caminhos após o diretório raiz
+	data_cluster data = lerCluster(index);//ler o diretório raiz
 	for (int i = 1; i <= strlen(diretorio); i++)
-	{
-		if (diretorio[i] == '/' || diretorio[i] == '\0' || diretorio[i] == '\n')
+	{//percorre a string diretorio
+		if (diretorio[i] == '/' || diretorio[i] == '\0' || diretorio[i] == '\n')//se encontrar algum desses caracters, um nome de diretório foi encontrado
 		{ //fim do nome de um diretorio
-			dirAtual[j] = '\0';
-
+			dirAtual[j] = '\0';//dirAtual que recebe o nome do diretorio recebe o \0
 			for (k = 0; k < 32; k++)
-			{
-
+			{//percoore as 32 entradas de diretório do cluster atual
 				if (strcmp(data.dir[k].filename, dirAtual) == 0 && data.dir[k].first_block != 0)
 				{ // verifica se acha um diretorio no cluster com o nome do dirAtual
 					if (data.dir[k].attributes == 1)
 					{ //existe diretorio
-						// if(numDiretorios != 0){
-						index = data.dir[k].first_block;
-						// if(numDiretorios == 0){
-						// 	return index;
-						// }
-
-						// }
-						data = lerCluster(index);
+						index = data.dir[k].first_block;//recebe o index do cluster encontrado
+						data = lerCluster(index);//ler o cluster encontrado
 						break;
 					}
 					else
 					{ //arquivo
 						if (numDiretorios == 0 && procura == 3)
-						{
-							///printf("E UM ARQUIVO\n");
+						{//se a pesquisa estiver no fim e for para achar um arquivo retorna o cluster
 							return index;
 						}
 					}
@@ -54,17 +44,16 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 			}
 
 			if (procura == 1)
-			{ //se for uma procura por um diretorio que será criado não deverá encontrar
+			{ //se for uma procura por um diretorio que será criado não deverá encontrar, ou se necessitar do diretório pai de algum diretório
 				if (k == 32 || numDiretorios == 0)
-				{
+				{//k == 32 significa que não achou o atualDir, e numDiretorios == 0 significa que chegou ao fim do caminho
 					if (numDiretorios != 0)
-					{
+					{//se o k == 32, mas não estiver no fim do arquivo, logo o diretorio não foi encontrado
 						printf("DIRETORIO NAO ENCONTRADO\n");
 						return -1;
 					}
 					if (k < 32)
-					{
-						//printf("DIRETORIO JA EXISTE\n");
+					{//encontrou o diretorio, retorna o pai
 						return indexPai;
 					}
 					return index;
@@ -73,7 +62,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 			else if (procura == 2)
 			{ // se for uma procura por um diretorio que ja existe deverá encontrar
 				if (k == 32 && numDiretorios == 0)
-				{
+				{// se estiver no fim do caminho e k == 32, não encontrou o cluster de algum no caminho
 					printf("DIRETORIO NAO ENCONTRADO\n");
 					return -1;
 				}
@@ -82,14 +71,13 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 					return index;
 				}
 			}
-			//printf("J>>%d<<%d>>>DIR: %s\n",k,numDiretorios,dirAtual);
-			numDiretorios--;
-			j = 0;
-			indexPai = index;
+			numDiretorios--;//encontrou mais um diretorio, logo o num de diretorios que devem ser porcurados diminui 1
+			j = 0;//variavel auxiliar para preencher dirAtual
+			indexPai = index;//salva o index atual, que será o index pai do próximo
 		}
 		else
 		{
-			dirAtual[j] = diretorio[i];
+			dirAtual[j] = diretorio[i];//preecnhe dirAtual com o nome do diretório
 			j++;
 		}
 	}
@@ -97,7 +85,7 @@ int procurarDIr(char *diretorio, char *dirAtual, int procura)
 }
 
 int getNumDiretorios(char *caminho)
-{												 //função usada para contar o número de diretórios
+{//função usada para contar o número de diretórios
 	int numDiretorios = 0; // variável para contar o número de diretórios inicializada com 0
 	int i = 0;						 //variável para percorrer a string
 	do
@@ -214,7 +202,7 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 		return clusters;
 	}
 	else
-	{
+	{//ocupa apenas um cluster
 		clusters = (data_cluster *)malloc(CLUSTER_SIZE);
 		memset(clusters, 0, CLUSTER_SIZE);
 		memcpy(&(clusters)[0], string, tamString);
@@ -225,14 +213,14 @@ data_cluster *quebrarStringClusters(char *string, int *numClusters)
 
 // fat
 void atualizarFat()
-{
+{//atualiza no arquivo apenas a tabela fat
 	FILE *arq = fopen("fat.part", "rb+");
 	if (arq == NULL)
 	{
 		printf("ERRO ao abrir arquivo fat\n");
 		exit(1);
 	}
-	fseek(arq, CLUSTER_SIZE, SEEK_SET);				//Aponta para o FAT após o boot_block de 1024 bytes
+	fseek(arq, CLUSTER_SIZE, SEEK_SET);//Aponta para o FAT após o boot_block de 1024 bytes
 	fwrite(fat, sizeof(uint16_t), 4096, arq); //Salva fat
 	fclose(arq);
 }

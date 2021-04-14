@@ -464,13 +464,13 @@ void append(char *parametros)
 		else
 		{
 			data_cluster *clusters;//cria uma lista de clusters
-			int numClusters = 0, indexBloco;
-			int t = 1023 - tamArq;
-			strncat(data.data, string, t);
+			int numClusters = 0, indexBloco,tam;
+			tam = 1023 - tamArq;
+			strncat(data.data, string, tam);//concatena com os n caracters da string
 			salvarCluster(index, data);//salva o que da no cluster atual
 			clusters = quebrarStringClusters(&string[1024 - tamArq], &numClusters);//preenche a lista com os clusters necessarios
 			for (indexBloco = 10; indexBloco < 4096; indexBloco++)
-			{
+			{//percorre a fat
 				if (fat[indexBloco] == 0x0000)
 				{//procura espaço vazio na fat
 					break;
@@ -482,12 +482,12 @@ void append(char *parametros)
 			if (numClusters > 1)
 			{
 				for (i = 1; i < numClusters; i++)
-				{ //salva os clusters restantes
+				{ //salva os clusters restantes se necessario
 					int indexBloco;
 					for (indexBloco = 10; indexBloco < 4096; indexBloco++)
-					{
+					{//percorre a fat
 						if (fat[indexBloco] == 0x0000)
-						{
+						{//para o loop se encontrar espeço vazio
 							break;
 						}
 					}
@@ -545,7 +545,7 @@ void read(char *diretorio)
 		{//procura e printa os outros clusters
 			index = fat[index];
 			data = lerCluster(index);
-			snprintf(arquivo, 1024, "%s", data.data);
+			snprintf(arquivo, 1024, "%s", data.data);//printa 1024 caracters,bits
 			printf("%s", arquivo);
 		}
 	}
