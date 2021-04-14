@@ -129,7 +129,7 @@ void salvarCluster(int index, data_cluster cluster)
 //strings
 void separaString(char *string1, char *string2, char *string3, char *separador)
 { //recebe uma string e separa a mesma em duas em relação à um caractere separador
-	if(strcmp(string1, "") == 0{
+	if(strcmp(string1, "") == 0){
 		strcpy(string2, "");
 		strcpy(string3, "");
 		return;
