@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define CLUSTER_SIZE 1024 //numero de clusters
-#define STRINGS_SIZE 200// TAMNHO LIMITE DAS STRINGS
+#define STRINGS_SIZE 200	// TAMNHO LIMITE DAS STRINGS
 
 /*Informa¸c˜oes sobre o valor das entradas na FAT de 16 bits:
 0x0000 -> cluster livre
@@ -40,8 +40,6 @@ typedef union
 	dir_entry_t dir[CLUSTER_SIZE / sizeof(dir_entry_t)]; //1024 bytes / 32 bytes = 32 posições
 	uint8_t data[CLUSTER_SIZE];
 } data_cluster;
-
-//typedef union data_cluster data_cluster;
 
 //assinatura das funções
 //funcoes fat

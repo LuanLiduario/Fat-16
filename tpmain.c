@@ -20,45 +20,45 @@ int main()
     //separa a entrada em comandao e seus parametros em uma string
     separaString(linhaComando, comando, parametros, " ");
     if (carregado == 1 || strcmp(comando, "load") == 0 || strcmp(comando, "init") == 0 || strcmp(comando, "exit") == 0)
-    {//verifica se a fat foi carregada 
+    { //verifica se a fat foi carregada
       if (strcmp(comando, "init") == 0 && strcmp(parametros, "") == 0)
-      {//chama a função init
+      { //chama a função init
         carregado = init();
       }
       else if (strcmp(comando, "load") == 0 && strcmp(parametros, "") == 0)
-      {//chama a função load
+      { //chama a função load
         carregado = load();
       }
       else if (strcmp(comando, "ls") == 0)
-      {//chama a função ls
+      { //chama a função ls
         ls(parametros);
       }
       else if (strcmp(comando, "mkdir") == 0)
-      {//chama a função mkdir
+      { //chama a função mkdir
         mkdir(parametros);
       }
       else if (strcmp(comando, "create") == 0)
-      {//chama a função create
+      { //chama a função create
         create(parametros);
       }
       else if (strcmp(comando, "unlink") == 0)
-      {//chama a função unlink
+      { //chama a função unlink
         unlink(parametros);
       }
       else if (strcmp(comando, "write") == 0)
-      {//chama a função write
+      { //chama a função write
         write(parametros);
       }
       else if (strcmp(comando, "append") == 0) // mkdir pasta criar
-      {//chama a função append
+      {                                        //chama a função append
         append(parametros);
       }
       else if (strcmp(comando, "read") == 0)
-      {//chama a função read
+      { //chama a função read
         read(parametros);
       }
       else if (strcmp(comando, "exit") == 0)
-      {//desaloca as strings e fecha o programa
+      { //desaloca as strings e fecha o programa
         free(linhaComando);
         free(comando);
         free(parametros);
