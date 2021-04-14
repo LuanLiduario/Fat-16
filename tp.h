@@ -59,7 +59,6 @@ void read(char *diretorio);
 //funcoes string
 void separaString(char *string1, char *string2, char *string3, char *separador);
 data_cluster *quebrarStringClusters(char *string, int *numClusters);
-void getString(char *parametro, char *string, char *diretorio);
 //funcoes diretorio
 int procurarDIr(char *diretorio, char *aux, int procura);
 int getNumDiretorios(char *caminho);
